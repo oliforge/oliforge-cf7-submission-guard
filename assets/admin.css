@@ -176,7 +176,9 @@
     background:var(--oli-neutral-bg);
     border:1px solid transparent;
     border-radius:999px;
-    cursor:pointer
+    cursor:pointer;
+    outline:none;
+    box-shadow:none
 }
 
 .oliforge-subtabs__link:hover {
@@ -188,6 +190,11 @@
     color:var(--oli-primary-active);
     background:var(--oli-primary-tint);
     border-color:var(--oli-primary-tint-border)
+}
+
+.oliforge-subtabs__link:focus-visible {
+    outline:2px solid var(--oli-primary);
+    outline-offset:2px
 }
 
 .oliforge-panel {
