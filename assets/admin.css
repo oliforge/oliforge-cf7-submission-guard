@@ -275,12 +275,29 @@
     gap:16px 20px
 }
 
-.oliforge-field-grid + .oliforge-field-grid {
+.oliforge-field-grid + .oliforge-field-grid,
+.oliforge-field-row + .oliforge-field-grid {
     margin-top:16px
 }
 
 .oliforge-field-grid--wide {
     grid-template-columns:1fr
+}
+
+/* A tight pair of related fields (e.g. a value and its length limit) that
+   must sit right next to each other instead of being stretched across the
+   full width of a two-column grid. */
+.oliforge-field-row {
+    display:flex;
+    flex-wrap:wrap;
+    align-items:flex-start;
+    gap:16px 24px;
+    margin-bottom:16px
+}
+
+.oliforge-field-row .oliforge-field {
+    flex:0 0 auto;
+    margin-bottom:0
 }
 
 .oliforge-field {
