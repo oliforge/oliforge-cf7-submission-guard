@@ -89,19 +89,19 @@ class OliForge_CF7SG_Settings {
         );
         add_submenu_page(
             'oliforge-cf7-submission-guard',
-            __( 'OliForge CF7 Submission Guard Logs', 'oliforge-cf7-submission-guard' ),
-            __( 'Logs', 'oliforge-cf7-submission-guard' ),
-            'manage_options',
-            'oliforge-cf7-submission-guard-logs',
-            array( $this, 'render_logs' )
-        );
-        add_submenu_page(
-            'oliforge-cf7-submission-guard',
             __( 'OliForge CF7 Submission Guard Settings', 'oliforge-cf7-submission-guard' ),
             __( 'Settings', 'oliforge-cf7-submission-guard' ),
             'manage_options',
             'oliforge-cf7-submission-guard-settings',
             array( $this, 'render_settings' )
+        );
+        add_submenu_page(
+            'oliforge-cf7-submission-guard',
+            __( 'OliForge CF7 Submission Guard Logs', 'oliforge-cf7-submission-guard' ),
+            __( 'Logs', 'oliforge-cf7-submission-guard' ),
+            'manage_options',
+            'oliforge-cf7-submission-guard-logs',
+            array( $this, 'render_logs' )
         );
     }
 
@@ -241,13 +241,13 @@ class OliForge_CF7SG_Settings {
     }
 
     /**
-     * Dashboard / Logs / Settings page-level navigation.
+     * Dashboard / Settings / Logs page-level navigation.
      */
     private function render_nav_tabs( $current ) {
         $tabs = array(
             'dashboard' => array( 'label' => __( 'Dashboard', 'oliforge-cf7-submission-guard' ), 'page' => 'oliforge-cf7-submission-guard' ),
-            'logs'      => array( 'label' => __( 'Logs', 'oliforge-cf7-submission-guard' ), 'page' => 'oliforge-cf7-submission-guard-logs' ),
             'settings'  => array( 'label' => __( 'Settings', 'oliforge-cf7-submission-guard' ), 'page' => 'oliforge-cf7-submission-guard-settings' ),
+            'logs'      => array( 'label' => __( 'Logs', 'oliforge-cf7-submission-guard' ), 'page' => 'oliforge-cf7-submission-guard-logs' ),
         );
         ?>
         <nav class="oliforge-tabs">
