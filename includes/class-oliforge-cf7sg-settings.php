@@ -389,7 +389,7 @@ class OliForge_CF7SG_Settings {
                     </section>
 
                     <section class="oliforge-panel" id="oliforge-cf7sg-panel-fields" data-oliforge-cf7sg-panel="fields">
-                        <div class="oliforge-field-grid">
+                        <div class="oliforge-field-row">
                             <?php $this->text_field( 'name_field', __( 'Name field', 'oliforge-cf7-submission-guard' ), $s ); ?>
                             <?php $this->text_field( 'name_max', __( 'Maximum name length', 'oliforge-cf7-submission-guard' ), $s, '', 'number', 0 ); ?>
                         </div>
