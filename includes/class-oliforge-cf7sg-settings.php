@@ -125,6 +125,10 @@ class OliForge_CF7SG_Settings {
     public function sanitize( $input ) {
         $defaults = self::defaults();
         $out = $defaults;
+        // Fields whose panel is only rendered when the optional Country Select
+        // integration is active; preserve their stored value instead of wiping
+        // it out when the panel (and so the POST field) is absent.
+        $current = self::get();
         $checkboxes = array( 'enabled','required_consent','block_urls','block_at','block_email_patterns','block_html','block_bbcode','rate_limit_enabled','min_time_enabled','duplicate_enabled','logging_enabled','log_success' );
         foreach ( $checkboxes as $key ) {
             $out[ $key ] = empty( $input[ $key ] ) ? 0 : 1;
@@ -133,15 +137,17 @@ class OliForge_CF7SG_Settings {
         $out['mode'] = isset( $input['mode'] ) && in_array( $input['mode'], array( 'enforce', 'monitor' ), true ) ? $input['mode'] : 'enforce';
         $out['ip_storage'] = isset( $input['ip_storage'] ) && in_array( $input['ip_storage'], array( 'anonymized', 'full', 'none' ), true ) ? $input['ip_storage'] : 'anonymized';
 
-        foreach ( array( 'name_field','message_field','email_field','country_field','consent_field','error_field' ) as $key ) {
+        foreach ( array( 'name_field','message_field','email_field','consent_field','error_field' ) as $key ) {
             $out[ $key ] = isset( $input[ $key ] ) ? sanitize_key( $input[ $key ] ) : '';
         }
+        $out['country_field'] = isset( $input['country_field'] ) ? sanitize_key( $input['country_field'] ) : $current['country_field'];
         foreach ( array( 'name_max','message_min','message_max','rate_limit_count','rate_limit_minutes','min_time_seconds','duplicate_minutes','retention_days','max_digits_percent','max_uppercase_percent' ) as $key ) {
             $out[ $key ] = isset( $input[ $key ] ) ? max( 0, absint( $input[ $key ] ) ) : 0;
         }
-        foreach ( array( 'content_fields','forbidden_words','blocked_domains','allowed_countries' ) as $key ) {
+        foreach ( array( 'content_fields','forbidden_words','blocked_domains' ) as $key ) {
             $out[ $key ] = isset( $input[ $key ] ) ? $this->clean_multiline( sanitize_textarea_field( wp_unslash( $input[ $key ] ) ) ) : '';
         }
+        $out['allowed_countries'] = isset( $input['allowed_countries'] ) ? $this->clean_multiline( sanitize_textarea_field( wp_unslash( $input['allowed_countries'] ) ) ) : $current['allowed_countries'];
         foreach ( array_keys( $defaults ) as $key ) {
             if ( 0 === strpos( $key, 'msg_' ) ) {
                 $out[ $key ] = isset( $input[ $key ] ) ? sanitize_text_field( wp_unslash( $input[ $key ] ) ) : $defaults[ $key ];
@@ -341,17 +347,22 @@ class OliForge_CF7SG_Settings {
     public function render_settings() {
         if ( ! current_user_can( 'manage_options' ) ) { return; }
         $s = self::get();
+        $country_select_active = OliForge_CF7SG_Plugin::country_select_is_active();
         $tabs = array(
             'general'  => __( 'General', 'oliforge-cf7-submission-guard' ),
             'fields'   => __( 'Core fields', 'oliforge-cf7-submission-guard' ),
             'content'  => __( 'Content rules', 'oliforge-cf7-submission-guard' ),
             'domains'  => __( 'Email domains', 'oliforge-cf7-submission-guard' ),
-            'country'  => __( 'Country', 'oliforge-cf7-submission-guard' ),
             'timing'   => __( 'Rate limit & timing', 'oliforge-cf7-submission-guard' ),
             'consent'  => __( 'Consent', 'oliforge-cf7-submission-guard' ),
             'logging'  => __( 'Logging', 'oliforge-cf7-submission-guard' ),
             'messages' => __( 'Error messages', 'oliforge-cf7-submission-guard' ),
         );
+        if ( $country_select_active ) {
+            $tabs = array_slice( $tabs, 0, 4, true )
+                + array( 'country' => __( 'Country', 'oliforge-cf7-submission-guard' ) )
+                + array_slice( $tabs, 4, null, true );
+        }
         ?>
         <div class="wrap oliforge-cf7sg-ui">
             <?php
@@ -385,7 +396,9 @@ class OliForge_CF7SG_Settings {
                             <?php $this->text_field( 'message_min', __( 'Minimum message length', 'oliforge-cf7-submission-guard' ), $s, '', 'number', 0 ); ?>
                             <?php $this->text_field( 'message_max', __( 'Maximum message length (0 = disabled)', 'oliforge-cf7-submission-guard' ), $s, '', 'number', 0 ); ?>
                             <?php $this->text_field( 'email_field', __( 'Email field', 'oliforge-cf7-submission-guard' ), $s ); ?>
-                            <?php $this->text_field( 'country_field', __( 'Country field', 'oliforge-cf7-submission-guard' ), $s ); ?>
+                            <?php if ( $country_select_active ) : ?>
+                                <?php $this->text_field( 'country_field', __( 'Country field', 'oliforge-cf7-submission-guard' ), $s ); ?>
+                            <?php endif; ?>
                         </div>
                     </section>
 
@@ -409,9 +422,11 @@ class OliForge_CF7SG_Settings {
                         <?php $this->textarea_field( 'blocked_domains', __( 'Blocked domains', 'oliforge-cf7-submission-guard' ), $s, __( 'One per line. Subdomains are blocked too.', 'oliforge-cf7-submission-guard' ), 10 ); ?>
                     </section>
 
-                    <section class="oliforge-panel" id="oliforge-cf7sg-panel-country" data-oliforge-cf7sg-panel="country">
-                        <?php $this->textarea_field( 'allowed_countries', __( 'Allowed values', 'oliforge-cf7-submission-guard' ), $s, __( 'One per line. If empty, the plugin validates against the CF7 select tag values when available.', 'oliforge-cf7-submission-guard' ), 10 ); ?>
-                    </section>
+                    <?php if ( $country_select_active ) : ?>
+                        <section class="oliforge-panel" id="oliforge-cf7sg-panel-country" data-oliforge-cf7sg-panel="country">
+                            <?php $this->textarea_field( 'allowed_countries', __( 'Allowed values', 'oliforge-cf7-submission-guard' ), $s, __( 'One per line. If empty, the plugin validates against the CF7 select tag values when available.', 'oliforge-cf7-submission-guard' ), 10 ); ?>
+                        </section>
+                    <?php endif; ?>
 
                     <section class="oliforge-panel" id="oliforge-cf7sg-panel-timing" data-oliforge-cf7sg-panel="timing">
                         <?php $this->toggle( 'rate_limit_enabled', __( 'Enable IP rate limiting', 'oliforge-cf7-submission-guard' ), $s ); ?>

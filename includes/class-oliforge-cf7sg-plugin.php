@@ -32,6 +32,29 @@ final class OliForge_CF7SG_Plugin {
     }
 
     /**
+     * Whether the optional OliForge CF7 Country Select integration is active.
+     *
+     * The filter allows compatibility with a renamed entry file without making
+     * country validation run merely because similarly named form tags exist.
+     */
+    public static function country_select_is_active() {
+        if ( defined( 'OLIFORGE_CF7_COUNTRY_SELECT_VERSION' ) || class_exists( 'OliForge_CF7_Country_Select' ) ) {
+            return true;
+        }
+
+        if ( ! function_exists( 'is_plugin_active' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }
+
+        $plugin_file = (string) apply_filters(
+            'oliforge_cf7sg_country_select_plugin_file',
+            'oliforge-cf7-country-select/oliforge-cf7-country-select.php'
+        );
+
+        return '' !== $plugin_file && is_plugin_active( $plugin_file );
+    }
+
+    /**
      * dbDelta() is idempotent, so re-running it whenever OLIFORGE_CF7SG_VERSION moves on
      * is enough to add new columns for sites that already had the plugin active
      * (activate() alone only runs once, on first activation).

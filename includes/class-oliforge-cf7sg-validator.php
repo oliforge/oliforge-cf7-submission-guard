@@ -196,7 +196,9 @@ class OliForge_CF7SG_Validator {
         $email = $this->raw( $s['email_field'] );
         if ( $email && $this->blocked_domain( $email ) ) { $this->add_event( 'blocked_domain', $s['email_field'], $s['msg_domain'] ); }
 
-        if ( $s['country_field'] && $this->validate_country( $s['country_field'] ) ) { $this->add_event( 'invalid_country', $s['country_field'], $s['msg_country'] ); }
+        if ( OliForge_CF7SG_Plugin::country_select_is_active() && $s['country_field'] && $this->validate_country( $s['country_field'] ) ) {
+            $this->add_event( 'invalid_country', $s['country_field'], $s['msg_country'] );
+        }
 
         if ( ! empty( $s['required_consent'] ) && $s['consent_field'] ) {
             $consent = $this->raw( $s['consent_field'] );
