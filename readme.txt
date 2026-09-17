@@ -3,7 +3,7 @@ Contributors: oliforge
 Tags: contact form 7, validation, spam, security, rate limit
 Requires at least: 6.2
 Requires PHP: 7.4
-Stable tag: 0.1.1
+Stable tag: 0.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,6 +20,9 @@ OliForge CF7 Submission Guard validates Contact Form 7 submissions before mail i
 3. Open the "Submission Guard" menu in wp-admin and configure field names/rules under Settings.
 
 == Changelog ==
+
+= 0.1.2 =
+* Replaced the fixed Name/Message length settings with a repeatable "Field length rules" list on the Core fields tab, so a minimum and/or maximum character length can be enforced on any CF7 field, not just name and message.
 
 = 0.1.1 =
 * Show country settings and run country validation only when OliForge CF7 Country Select is active.
