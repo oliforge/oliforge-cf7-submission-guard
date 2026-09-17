@@ -398,12 +398,14 @@ class OliForge_CF7SG_Settings {
                             <?php $this->text_field( 'message_min', __( 'Minimum message length', 'oliforge-cf7-submission-guard' ), $s, '', 'number', 0 ); ?>
                             <?php $this->text_field( 'message_max', __( 'Maximum message length (0 = disabled)', 'oliforge-cf7-submission-guard' ), $s, '', 'number', 0 ); ?>
                         </div>
-                        <div class="oliforge-field-grid">
+                        <div class="oliforge-field-row">
                             <?php $this->text_field( 'email_field', __( 'Email field', 'oliforge-cf7-submission-guard' ), $s ); ?>
-                            <?php if ( $country_select_active ) : ?>
-                                <?php $this->text_field( 'country_field', __( 'Country field', 'oliforge-cf7-submission-guard' ), $s ); ?>
-                            <?php endif; ?>
                         </div>
+                        <?php if ( $country_select_active ) : ?>
+                            <div class="oliforge-field-row">
+                                <?php $this->text_field( 'country_field', __( 'Country field', 'oliforge-cf7-submission-guard' ), $s ); ?>
+                            </div>
+                        <?php endif; ?>
                     </section>
 
                     <section class="oliforge-panel" id="oliforge-cf7sg-panel-content" data-oliforge-cf7sg-panel="content">
