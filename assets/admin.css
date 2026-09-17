@@ -192,9 +192,19 @@
     border-color:var(--oli-primary-tint-border)
 }
 
+/* WP core's a:focus rule sets a blue box-shadow ring with higher
+   specificity (element+pseudo-class) than a plain class selector, so
+   it otherwise wins over the base .oliforge-subtabs__link reset above
+   on click. Match it here explicitly to clear it. */
+.oliforge-subtabs__link:focus {
+    outline:none;
+    box-shadow:none
+}
+
 .oliforge-subtabs__link:focus-visible {
     outline:2px solid var(--oli-primary);
-    outline-offset:2px
+    outline-offset:2px;
+    box-shadow:none
 }
 
 .oliforge-panel {
