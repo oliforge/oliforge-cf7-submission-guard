@@ -392,6 +392,8 @@ class OliForge_CF7SG_Settings {
                         <div class="oliforge-field-grid">
                             <?php $this->text_field( 'name_field', __( 'Name field', 'oliforge-cf7-submission-guard' ), $s ); ?>
                             <?php $this->text_field( 'name_max', __( 'Maximum name length', 'oliforge-cf7-submission-guard' ), $s, '', 'number', 0 ); ?>
+                        </div>
+                        <div class="oliforge-field-grid">
                             <?php $this->text_field( 'message_field', __( 'Message field', 'oliforge-cf7-submission-guard' ), $s ); ?>
                             <?php $this->text_field( 'message_min', __( 'Minimum message length', 'oliforge-cf7-submission-guard' ), $s, '', 'number', 0 ); ?>
                             <?php $this->text_field( 'message_max', __( 'Maximum message length (0 = disabled)', 'oliforge-cf7-submission-guard' ), $s, '', 'number', 0 ); ?>

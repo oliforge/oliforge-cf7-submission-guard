@@ -275,6 +275,10 @@
     gap:16px 20px
 }
 
+.oliforge-field-grid + .oliforge-field-grid {
+    margin-top:16px
+}
+
 .oliforge-field-grid--wide {
     grid-template-columns:1fr
 }
