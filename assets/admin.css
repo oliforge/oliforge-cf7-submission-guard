@@ -189,7 +189,7 @@
 .oliforge-subtabs__link.is-active {
     color:var(--oli-primary-active);
     background:var(--oli-primary-tint);
-    border-color:var(--oli-primary-tint-border)
+    border-color:transparent
 }
 
 /* WP core's a:focus rule sets a blue box-shadow ring with higher
