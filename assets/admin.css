@@ -410,6 +410,13 @@
     user-select:none
 }
 
+/* Toggles printed one after another on the same line (e.g. the Content
+   rules block-list) only need breathing room between them, not before
+   the first one. */
+.oliforge-cf7sg-ui .oliforge-toggle + .oliforge-toggle {
+    margin-left:32px
+}
+
 .oliforge-cf7sg-ui .oliforge-toggle__input {
     position:absolute;
     width:1px;
