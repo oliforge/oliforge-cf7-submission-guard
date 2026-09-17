@@ -370,14 +370,14 @@
     color:var(--oli-body)
 }
 
-.oliforge-cf7sg-ui .button-delete {
+.oliforge-cf7sg-ui .button.delete {
     border-radius:var(--oli-radius);
     background:#fff;
     border-color:var(--oli-danger);
     color:var(--oli-danger)
 }
 
-.oliforge-cf7sg-ui .button-delete:hover {
+.oliforge-cf7sg-ui .button.delete:hover {
     background:var(--oli-danger);
     border-color:var(--oli-danger);
     color:#fff
