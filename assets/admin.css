@@ -14,6 +14,8 @@
     --oli-danger-bg:#FDECEC;
     --oli-success:#1B8A5A;
     --oli-success-bg:#E7F7EF;
+    --oli-warning:#9A5B00;
+    --oli-warning-bg:#FFF2D6;
     --oli-neutral:#57606A;
     --oli-neutral-bg:#F1F2F4;
     --oli-radius-lg:12px;
@@ -243,7 +245,7 @@
 /* Stat tiles on the dashboard */
 .oliforge-metrics {
     display:grid;
-    grid-template-columns:repeat(3,minmax(0,1fr));
+    grid-template-columns:repeat(4,minmax(0,1fr));
     gap:16px;
     margin-bottom:18px
 }
@@ -282,6 +284,54 @@
 
 .oliforge-field-grid--wide {
     grid-template-columns:1fr
+}
+
+.oliforge-form-profile {
+    border:1px solid var(--oli-border);
+    border-radius:var(--oli-radius-lg);
+    background:#fff;
+    padding:20px;
+    margin-bottom:18px
+}
+
+.oliforge-form-profile:last-child {
+    margin-bottom:0
+}
+
+.oliforge-form-profile__header {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:20px;
+    padding-bottom:18px;
+    margin-bottom:18px;
+    border-bottom:1px solid var(--oli-border)
+}
+
+.oliforge-form-profile__header h2,
+.oliforge-form-profile__header p {
+    margin:0
+}
+
+.oliforge-form-profile__header p {
+    margin-top:5px;
+    color:var(--oli-muted)
+}
+
+.oliforge-field--wide {
+    margin-top:18px
+}
+
+.oliforge-field-options {
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px 16px
+}
+
+.oliforge-field-options label {
+    display:flex;
+    align-items:center;
+    gap:5px
 }
 
 /* A tight pair of related fields (e.g. a value and its length limit) that
@@ -580,6 +630,11 @@
     color:var(--oli-success)
 }
 
+.oliforge-result-badge--monitored {
+    background:var(--oli-warning-bg);
+    color:var(--oli-warning)
+}
+
 @media (max-width: 782px) {
     .oliforge-header {
         flex-direction:column;
@@ -587,7 +642,11 @@
     }
     .oliforge-card-grid,
     .oliforge-field-grid,
-    .oliforge-metrics {
+    .oliforge-metrics,
+    .oliforge-field-options {
         grid-template-columns:1fr
+    }
+    .oliforge-form-profile__header {
+        flex-direction:column
     }
 }

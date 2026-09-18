@@ -5,18 +5,23 @@ class OliForge_CF7SG_Validator {
     private $settings;
     private $events = array();
     private $request_checked = false;
+    private $duplicate_key = '';
+    private $profile = array();
 
     public function __construct() {
         $this->settings = OliForge_CF7SG_Settings::get();
         add_filter( 'wpcf7_form_elements', array( $this, 'inject_timing_token' ) );
         add_filter( 'wpcf7_validate', array( $this, 'validate' ), 50, 2 );
-        add_action( 'wpcf7_mail_sent', array( $this, 'log_success' ) );
+        add_action( 'wpcf7_mail_sent', array( $this, 'handle_mail_sent' ) );
     }
 
     public function inject_timing_token( $html ) {
         if ( empty( $this->settings['enabled'] ) || empty( $this->settings['min_time_enabled'] ) ) { return $html; }
+        $profile = $this->active_profile();
+        if ( ! $profile ) { return $html; }
+        $form_id = $this->numeric_form_id();
         $ts = time();
-        $sig = hash_hmac( 'sha256', (string) $ts, wp_salt( 'nonce' ) );
+        $sig = hash_hmac( 'sha256', $form_id . '|' . $ts, wp_salt( 'nonce' ) );
         return $html . sprintf(
             '<input type="hidden" name="_oliforge_cf7sg_ts" value="%1$d"><input type="hidden" name="_oliforge_cf7sg_sig" value="%2$s">',
             $ts,
@@ -51,6 +56,37 @@ class OliForge_CF7SG_Validator {
         return method_exists( $form, 'id' ) ? (string) $form->id() : '';
     }
 
+    private function numeric_form_id() {
+        $form = function_exists( 'wpcf7_get_current_contact_form' ) ? wpcf7_get_current_contact_form() : null;
+        return $form && method_exists( $form, 'id' ) ? (string) absint( $form->id() ) : '';
+    }
+
+    private function active_profile() {
+        $form_id = $this->numeric_form_id();
+        $profiles = isset( $this->settings['forms'] ) && is_array( $this->settings['forms'] ) ? $this->settings['forms'] : array();
+        if ( '' === $form_id || empty( $profiles[ $form_id ] ) || empty( $profiles[ $form_id ]['enabled'] ) ) { return array(); }
+
+        $profile = wp_parse_args(
+            $profiles[ $form_id ],
+            array(
+                'name_field' => '', 'name_max' => 0, 'message_field' => '', 'message_min' => 0,
+                'message_max' => 0, 'email_field' => '', 'country_field' => '', 'consent_field' => '',
+                'error_field' => '', 'content_fields' => array(),
+            )
+        );
+        $form = function_exists( 'wpcf7_get_current_contact_form' ) ? wpcf7_get_current_contact_form() : null;
+        if ( ! $form || ! method_exists( $form, 'scan_form_tags' ) ) { return array(); }
+        $valid_fields = array();
+        foreach ( (array) $form->scan_form_tags() as $tag ) {
+            if ( ! empty( $tag->name ) ) { $valid_fields[] = sanitize_key( $tag->name ); }
+        }
+        foreach ( array( 'name_field', 'message_field', 'email_field', 'country_field', 'consent_field', 'error_field' ) as $key ) {
+            if ( empty( $profile[ $key ] ) || ! in_array( $profile[ $key ], $valid_fields, true ) ) { $profile[ $key ] = ''; }
+        }
+        $profile['content_fields'] = array_values( array_intersect( isset( $profile['content_fields'] ) ? (array) $profile['content_fields'] : array(), $valid_fields ) );
+        return $profile;
+    }
+
     private function add_event( $rule, $field, $message ) {
         $this->events[] = array( 'rule' => $rule, 'field' => $field, 'message' => $message );
     }
@@ -67,7 +103,7 @@ class OliForge_CF7SG_Validator {
     private function invalidate( $result, $field, $message ) {
         if ( 'monitor' === $this->settings['mode'] ) { return; }
         $tag = $this->tag_by_name( $field );
-        if ( ! $tag ) { $tag = $this->tag_by_name( $this->settings['error_field'] ); }
+        if ( ! $tag && ! empty( $this->profile['error_field'] ) ) { $tag = $this->tag_by_name( $this->profile['error_field'] ); }
         // CF7 core silently ignores invalidate() unless $tag resolves to a real tag
         // name on the form. If the configured field and error_field both mismatch
         // the actual form tags, fall back to the first eligible tag so a matched
@@ -141,44 +177,55 @@ class OliForge_CF7SG_Validator {
         return false;
     }
 
-    private function timing_invalid() {
+    private function timing_invalid( $form_id ) {
         if ( empty( $this->settings['min_time_enabled'] ) ) { return false; }
         $ts = isset( $_POST['_oliforge_cf7sg_ts'] ) ? absint( $_POST['_oliforge_cf7sg_ts'] ) : 0;
         $sig = isset( $_POST['_oliforge_cf7sg_sig'] ) ? sanitize_text_field( wp_unslash( $_POST['_oliforge_cf7sg_sig'] ) ) : '';
         if ( ! $ts || ! $sig ) { return true; }
-        $expected = hash_hmac( 'sha256', (string) $ts, wp_salt( 'nonce' ) );
+        $expected = hash_hmac( 'sha256', $form_id . '|' . $ts, wp_salt( 'nonce' ) );
         if ( ! hash_equals( $expected, $sig ) ) { return true; }
         $elapsed = time() - $ts;
         return $elapsed < absint( $this->settings['min_time_seconds'] ) || $elapsed > DAY_IN_SECONDS;
     }
 
-    private function duplicate( $ip, $form_id, $message ) {
+    private function is_duplicate( $ip, $form_id, $message ) {
         if ( empty( $this->settings['duplicate_enabled'] ) || '' === $message ) { return false; }
-        $key = 'oliforge_cf7sg_dup_' . md5( $ip . '|' . $form_id . '|' . hash( 'sha256', $message ) );
-        if ( get_transient( $key ) ) { return true; }
-        set_transient( $key, 1, max( 1, absint( $this->settings['duplicate_minutes'] ) ) * MINUTE_IN_SECONDS );
-        return false;
+        $this->duplicate_key = 'oliforge_cf7sg_dup_' . md5( $ip . '|' . $form_id . '|' . hash( 'sha256', $message ) );
+        return (bool) get_transient( $this->duplicate_key );
+    }
+
+    private function remember_submission() {
+        if ( '' === $this->duplicate_key || get_transient( $this->duplicate_key ) ) { return; }
+        set_transient(
+            $this->duplicate_key,
+            1,
+            max( 1, absint( $this->settings['duplicate_minutes'] ) ) * MINUTE_IN_SECONDS
+        );
     }
 
     public function validate( $result, $tags ) {
         if ( $this->request_checked || empty( $this->settings['enabled'] ) ) { return $result; }
+        $profile = $this->active_profile();
+        if ( ! $profile ) { return $result; }
         $this->request_checked = true;
+        $this->profile = $profile;
         $s = $this->settings;
+        $p = $this->profile;
 
-        $name = $this->raw( $s['name_field'] );
-        if ( $s['name_max'] > 0 && mb_strlen( $name ) > $s['name_max'] ) {
-            $this->add_event( 'name_max', $s['name_field'], $s['msg_name_max'] );
+        $name = $this->raw( $p['name_field'] );
+        if ( $p['name_field'] && $p['name_max'] > 0 && mb_strlen( $name ) > $p['name_max'] ) {
+            $this->add_event( 'name_max', $p['name_field'], $s['msg_name_max'] );
         }
 
-        $message = $this->raw( $s['message_field'] );
-        if ( $s['message_min'] > 0 && mb_strlen( $message ) < $s['message_min'] ) {
-            $this->add_event( 'message_min', $s['message_field'], $s['msg_message_min'] );
+        $message = $this->raw( $p['message_field'] );
+        if ( $p['message_field'] && $p['message_min'] > 0 && mb_strlen( $message ) < $p['message_min'] ) {
+            $this->add_event( 'message_min', $p['message_field'], $s['msg_message_min'] );
         }
-        if ( $s['message_max'] > 0 && mb_strlen( $message ) > $s['message_max'] ) {
-            $this->add_event( 'message_max', $s['message_field'], $s['msg_message_max'] );
+        if ( $p['message_field'] && $p['message_max'] > 0 && mb_strlen( $message ) > $p['message_max'] ) {
+            $this->add_event( 'message_max', $p['message_field'], $s['msg_message_max'] );
         }
 
-        foreach ( $this->lines( $s['content_fields'] ) as $field ) {
+        foreach ( (array) $p['content_fields'] as $field ) {
             $text = $this->raw( sanitize_key( $field ) );
             if ( '' === $text ) { continue; }
             if ( ! empty( $s['block_urls'] ) && $this->detect_url( $text ) ) { $this->add_event( 'url_detected', $field, $s['msg_url'] ); }
@@ -193,41 +240,45 @@ class OliForge_CF7SG_Validator {
             }
         }
 
-        $email = $this->raw( $s['email_field'] );
-        if ( $email && $this->blocked_domain( $email ) ) { $this->add_event( 'blocked_domain', $s['email_field'], $s['msg_domain'] ); }
+        $email = $this->raw( $p['email_field'] );
+        if ( $p['email_field'] && $email && $this->blocked_domain( $email ) ) { $this->add_event( 'blocked_domain', $p['email_field'], $s['msg_domain'] ); }
 
-        if ( OliForge_CF7SG_Plugin::country_select_is_active() && $s['country_field'] && $this->validate_country( $s['country_field'] ) ) {
-            $this->add_event( 'invalid_country', $s['country_field'], $s['msg_country'] );
+        if ( OliForge_CF7SG_Plugin::country_select_is_active() && $p['country_field'] && $this->validate_country( $p['country_field'] ) ) {
+            $this->add_event( 'invalid_country', $p['country_field'], $s['msg_country'] );
         }
 
-        if ( ! empty( $s['required_consent'] ) && $s['consent_field'] ) {
-            $consent = $this->raw( $s['consent_field'] );
-            if ( '' === $consent ) { $this->add_event( 'consent_missing', $s['consent_field'], $s['msg_consent'] ); }
+        if ( ! empty( $s['required_consent'] ) && $p['consent_field'] ) {
+            $consent = $this->raw( $p['consent_field'] );
+            if ( '' === $consent ) { $this->add_event( 'consent_missing', $p['consent_field'], $s['msg_consent'] ); }
         }
 
-        if ( $this->timing_invalid() ) { $this->add_event( 'too_fast', $s['error_field'], $s['msg_too_fast'] ); }
+        $numeric_form_id = $this->numeric_form_id();
+        if ( $this->timing_invalid( $numeric_form_id ) ) { $this->add_event( 'too_fast', $p['error_field'], $s['msg_too_fast'] ); }
 
         $ip = $this->ip();
         $form_id = $this->form_id();
         if ( ! empty( $s['rate_limit_enabled'] ) && OliForge_CF7SG_Rate_Limiter::hit( $ip, $form_id, absint( $s['rate_limit_count'] ), absint( $s['rate_limit_minutes'] ) ) ) {
-            $this->add_event( 'rate_limit', $s['error_field'], $s['msg_rate_limit'] );
+            $this->add_event( 'rate_limit', $p['error_field'], $s['msg_rate_limit'] );
         }
-        if ( $this->duplicate( $ip, $form_id, $message ) ) { $this->add_event( 'duplicate', $s['message_field'], $s['msg_duplicate'] ); }
+        if ( $this->is_duplicate( $ip, $form_id, $message ) ) { $this->add_event( 'duplicate', $p['message_field'], $s['msg_duplicate'] ); }
 
         $domain = $this->email_domain( $email );
+        $event_result = 'monitor' === $s['mode'] ? 'monitored' : 'blocked';
         foreach ( $this->events as $event ) {
             $this->invalidate( $result, sanitize_key( $event['field'] ), $event['message'] );
-            OliForge_CF7SG_Logger::add( $form_id, 'blocked', $event['rule'], $event['field'], $ip, $s, $domain );
+            OliForge_CF7SG_Logger::add( $form_id, $event_result, $event['rule'], $event['field'], $ip, $s, $domain );
         }
 
         return $result;
     }
 
-    public function log_success( $contact_form ) {
+    public function handle_mail_sent( $contact_form ) {
         $s = $this->settings;
+        if ( ! $this->profile ) { return; }
+        $this->remember_submission();
         if ( empty( $s['logging_enabled'] ) || empty( $s['log_success'] ) || ! empty( $this->events ) ) { return; }
         $form_id = method_exists( $contact_form, 'hash' ) && $contact_form->hash() ? $contact_form->hash() : ( method_exists( $contact_form, 'id' ) ? $contact_form->id() : '' );
-        $domain = $this->email_domain( $this->raw( $s['email_field'] ) );
+        $domain = $this->email_domain( $this->raw( $this->profile['email_field'] ) );
         OliForge_CF7SG_Logger::add( $form_id, 'allowed', 'passed', '', $this->ip(), $s, $domain );
     }
 }
