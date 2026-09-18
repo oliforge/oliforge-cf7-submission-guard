@@ -161,7 +161,18 @@ class OliForge_CF7SG_Validator {
         $allowed = $this->lines( $this->settings['allowed_countries'] );
         if ( ! $allowed ) {
             $tag = $this->tag_by_name( $field );
-            if ( $tag && isset( $tag->values ) ) { $allowed = array_map( 'strval', (array) $tag->values ); }
+            // OliForge CF7 Country Select's own [country_select] tag builds
+            // its option list from an internal country database rather than
+            // CF7's pipe-value syntax; the quoted string on that tag (e.g.
+            // "Select a country") is its placeholder text, which CF7 still
+            // parses into $tag->values. Falling back to it here would treat
+            // the placeholder as the only "allowed" country and reject every
+            // real selection, so only trust $tag->values for tags that
+            // actually use CF7's native pipe-value list.
+            $basetype = $tag && isset( $tag->basetype ) ? (string) $tag->basetype : '';
+            if ( $tag && 'country_select' !== $basetype && isset( $tag->values ) ) {
+                $allowed = array_map( 'strval', (array) $tag->values );
+            }
         }
         if ( ! $allowed ) { return false; }
         return ! in_array( $value, $allowed, true );
