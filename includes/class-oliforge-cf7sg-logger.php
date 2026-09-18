@@ -95,6 +95,7 @@ class OliForge_CF7SG_Logger {
         $threshold = gmdate( 'Y-m-d H:i:s', time() - ( $days * DAY_IN_SECONDS ) );
         $table = self::table();
         $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE created_at < %s", $threshold ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        OliForge_CF7SG_Rate_Limiter::cleanup_expired();
     }
 
     public static function clear() {
