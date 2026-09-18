@@ -456,6 +456,12 @@ class OliForge_CF7SG_Settings {
         if ( ! current_user_can( 'manage_options' ) ) { return; }
         $s = self::get();
         $country_select_active = OliForge_CF7SG_Plugin::country_select_is_active();
+        // The "Country" tab (allowed_countries allowlist) is disabled for now:
+        // the country list is already governed by the [country_select] field's
+        // own settings (OliForge CF7 Country Select), so a second, separate
+        // allowlist here is redundant. Flip this back to true to bring the
+        // tab back if a use case for it comes up again.
+        $show_country_tab = false;
         $available_forms = OliForge_CF7SG_Forms::all();
         $form_profiles = OliForge_CF7SG_Forms::for_admin( isset( $s['forms'] ) ? $s['forms'] : array(), $s );
         $tabs = array(
@@ -468,7 +474,7 @@ class OliForge_CF7SG_Settings {
             'logging'  => __( 'Logging', 'oliforge-cf7-submission-guard' ),
             'messages' => __( 'Error messages', 'oliforge-cf7-submission-guard' ),
         );
-        if ( $country_select_active ) {
+        if ( $show_country_tab && $country_select_active ) {
             $tabs = array_slice( $tabs, 0, 4, true )
                 + array( 'country' => __( 'Country', 'oliforge-cf7-submission-guard' ) )
                 + array_slice( $tabs, 4, null, true );
@@ -553,7 +559,7 @@ class OliForge_CF7SG_Settings {
                         <?php $this->textarea_field( 'blocked_domains', __( 'Blocked domains', 'oliforge-cf7-submission-guard' ), $s, __( 'One per line. Subdomains are blocked too.', 'oliforge-cf7-submission-guard' ), 10 ); ?>
                     </section>
 
-                    <?php if ( $country_select_active ) : ?>
+                    <?php if ( $show_country_tab && $country_select_active ) : ?>
                         <section class="oliforge-panel" id="oliforge-cf7sg-panel-country" data-oliforge-cf7sg-panel="country">
                             <?php $this->textarea_field( 'allowed_countries', __( 'Allowed values', 'oliforge-cf7-submission-guard' ), $s, __( 'One per line. If empty, the plugin validates against the CF7 select tag values when available.', 'oliforge-cf7-submission-guard' ), 10 ); ?>
                         </section>
