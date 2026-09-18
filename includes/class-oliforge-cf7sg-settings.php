@@ -180,17 +180,23 @@ class OliForge_CF7SG_Settings {
                 $value = isset( $posted[ $key ] ) ? sanitize_key( $posted[ $key ] ) : '';
                 $profile[ $key ] = in_array( $value, $valid_fields, true ) ? $value : '';
             }
-            // The country-fields panel is only rendered when Country Select
-            // is active (see the "Country fields" checkbox group below), so
-            // a POST without it at all means "panel not shown", not "clear
-            // the selection" — preserve the existing value in that case,
-            // same as the allowed_countries handling above.
-            $posted_country_fields = isset( $posted['country_fields'] ) && is_array( $posted['country_fields'] )
-                ? $posted['country_fields']
-                : ( isset( $existing['country_fields'] )
-                    ? (array) $existing['country_fields']
-                    // A profile saved before multi-field country support.
-                    : ( ! empty( $existing['country_field'] ) ? array( $existing['country_field'] ) : array() ) );
+            // Unchecked checkboxes submit nothing, so an absent
+            // "country_fields" key is ambiguous between "the panel wasn't
+            // rendered at all" (Country Select inactive, or the form has no
+            // country_select fields — preserve the existing value) and "the
+            // admin unchecked every box" (genuinely clear it). The
+            // country_fields_present marker (see profile_country_fields())
+            // disambiguates: present only when the panel itself was shown.
+            if ( isset( $posted['country_fields'] ) && is_array( $posted['country_fields'] ) ) {
+                $posted_country_fields = $posted['country_fields'];
+            } elseif ( isset( $posted['country_fields_present'] ) ) {
+                $posted_country_fields = array();
+            } elseif ( isset( $existing['country_fields'] ) ) {
+                $posted_country_fields = (array) $existing['country_fields'];
+            } else {
+                // A profile saved before multi-field country support.
+                $posted_country_fields = ! empty( $existing['country_field'] ) ? array( $existing['country_field'] ) : array();
+            }
             $profile['country_fields'] = array_values( array_intersect(
                 array_unique( array_map( 'sanitize_key', $posted_country_fields ) ),
                 $valid_fields
@@ -333,6 +339,12 @@ class OliForge_CF7SG_Settings {
         if ( ! $country_fields ) { return; }
         echo '<div class="oliforge-field oliforge-field--wide">';
         printf( '<span class="oliforge-field__label">%s</span>', esc_html__( 'Country fields', 'oliforge-cf7-submission-guard' ) );
+        // Unchecked checkboxes submit nothing at all, so "country_fields"
+        // missing from $_POST is ambiguous between "this panel wasn't
+        // rendered" (preserve the stored value) and "every box was
+        // unchecked" (the admin wants to clear it) — this hidden marker,
+        // present whenever the panel is, disambiguates the two in sanitize().
+        printf( '<input type="hidden" name="%1$s[forms][%2$s][country_fields_present]" value="1">', esc_attr( self::OPTION ), esc_attr( $form_id ) );
         echo '<div class="oliforge-field-options">';
         foreach ( $country_fields as $field ) {
             printf(
