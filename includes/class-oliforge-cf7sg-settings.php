@@ -185,10 +185,17 @@ class OliForge_CF7SG_Settings {
                 $profile[ $key ] = isset( $posted[ $key ] ) ? max( 0, absint( $posted[ $key ] ) ) : 0;
             }
 
+            // Fields already covered by their own dedicated, single-purpose
+            // check (email domain, country, consent) never belong in the
+            // generic content rules: e.g. "block @ character" would reject
+            // every legitimate email address.
+            $single_purpose_fields = array_filter( array( $profile['email_field'], $profile['country_field'], $profile['consent_field'] ) );
             $profile['content_fields'] = array();
             foreach ( isset( $posted['content_fields'] ) ? (array) $posted['content_fields'] : array() as $field ) {
                 $field = sanitize_key( $field );
-                if ( in_array( $field, $valid_fields, true ) ) { $profile['content_fields'][] = $field; }
+                if ( in_array( $field, $valid_fields, true ) && ! in_array( $field, $single_purpose_fields, true ) ) {
+                    $profile['content_fields'][] = $field;
+                }
             }
             $profile['content_fields'] = array_values( array_unique( $profile['content_fields'] ) );
             $out['forms'][ $form_id ] = $profile;
@@ -288,12 +295,19 @@ class OliForge_CF7SG_Settings {
         );
     }
 
-    private function profile_content_fields( $form_id, $profile, $fields ) {
+    /**
+     * $exclude are field names that already have their own dedicated,
+     * single-purpose validation (email domain, country, consent) and so
+     * should never be offered here: generic content rules like "block @
+     * character" are structurally incompatible with, e.g., an email field.
+     */
+    private function profile_content_fields( $form_id, $profile, $fields, $exclude = array() ) {
         $selected = isset( $profile['content_fields'] ) ? (array) $profile['content_fields'] : array();
         echo '<div class="oliforge-field oliforge-field--wide">';
         printf( '<span class="oliforge-field__label">%s</span>', esc_html__( 'Fields checked by content rules', 'oliforge-cf7-submission-guard' ) );
         echo '<div class="oliforge-field-options">';
         foreach ( $fields as $field ) {
+            if ( in_array( $field['name'], $exclude, true ) ) { continue; }
             printf(
                 '<label><input type="checkbox" name="%1$s[forms][%2$s][content_fields][]" value="%3$s" %4$s> <code>%3$s</code> <span>%5$s</span></label>',
                 esc_attr( self::OPTION ), esc_attr( $form_id ), esc_attr( $field['name'] ), checked( in_array( $field['name'], $selected, true ), true, false ), esc_html( $field['type'] )
@@ -490,9 +504,16 @@ class OliForge_CF7SG_Settings {
                                     <?php $this->profile_field_select( $form_id, 'email_field', __( 'Email field', 'oliforge-cf7-submission-guard' ), $profile, $form['fields'] ); ?>
                                     <?php if ( $country_select_active ) { $this->profile_field_select( $form_id, 'country_field', __( 'Country field', 'oliforge-cf7-submission-guard' ), $profile, $form['fields'] ); } ?>
                                     <?php $this->profile_field_select( $form_id, 'consent_field', __( 'Consent field', 'oliforge-cf7-submission-guard' ), $profile, $form['fields'] ); ?>
-                                    <?php $this->profile_field_select( $form_id, 'error_field', __( 'Generic error field', 'oliforge-cf7-submission-guard' ), $profile, $form['fields'] ); ?>
+                                    <?php $this->profile_field_select( $form_id, 'error_field', __( 'Generic error field', 'oliforge-cf7-submission-guard' ), $profile, $form['fields'], __( 'Used when a matched rule has no field of its own to attach the error to (e.g. rate limiting, too-fast submission).', 'oliforge-cf7-submission-guard' ) ); ?>
                                 </div>
-                                <?php $this->profile_content_fields( $form_id, $profile, $form['fields'] ); ?>
+                                <?php
+                                $this->profile_content_fields(
+                                    $form_id,
+                                    $profile,
+                                    $form['fields'],
+                                    array_filter( array( $profile['email_field'], $profile['country_field'], $profile['consent_field'] ) )
+                                );
+                                ?>
                             </article>
                         <?php endforeach; endif; ?>
                     </section>
