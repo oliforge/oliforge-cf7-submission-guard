@@ -165,17 +165,17 @@ class OliForge_CF7SG_Validator {
         $this->request_checked = true;
         $s = $this->settings;
 
-        $message = $this->raw( $s['message_field'] );
+        $name = $this->raw( $s['name_field'] );
+        if ( $s['name_max'] > 0 && mb_strlen( $name ) > $s['name_max'] ) {
+            $this->add_event( 'name_max', $s['name_field'], $s['msg_name_max'] );
+        }
 
-        foreach ( (array) $s['length_rules'] as $rule ) {
-            $field = isset( $rule['field'] ) ? sanitize_key( $rule['field'] ) : '';
-            if ( '' === $field ) { continue; }
-            $min = isset( $rule['min'] ) ? absint( $rule['min'] ) : 0;
-            $max = isset( $rule['max'] ) ? absint( $rule['max'] ) : 0;
-            if ( 0 === $min && 0 === $max ) { continue; }
-            $len = mb_strlen( $this->raw( $field ) );
-            if ( $min > 0 && $len < $min ) { $this->add_event( 'min_length', $field, $s['msg_min_length'] ); }
-            if ( $max > 0 && $len > $max ) { $this->add_event( 'max_length', $field, $s['msg_max_length'] ); }
+        $message = $this->raw( $s['message_field'] );
+        if ( $s['message_min'] > 0 && mb_strlen( $message ) < $s['message_min'] ) {
+            $this->add_event( 'message_min', $s['message_field'], $s['msg_message_min'] );
+        }
+        if ( $s['message_max'] > 0 && mb_strlen( $message ) > $s['message_max'] ) {
+            $this->add_event( 'message_max', $s['message_field'], $s['msg_message_max'] );
         }
 
         foreach ( $this->lines( $s['content_fields'] ) as $field ) {
