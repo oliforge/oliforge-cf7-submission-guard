@@ -77,8 +77,12 @@ class OliForge_CF7SG_Validator {
         $form = function_exists( 'wpcf7_get_current_contact_form' ) ? wpcf7_get_current_contact_form() : null;
         if ( ! $form || ! method_exists( $form, 'scan_form_tags' ) ) { return array(); }
         $valid_fields = array();
+        $select_fields = array();
         foreach ( (array) $form->scan_form_tags() as $tag ) {
-            if ( ! empty( $tag->name ) ) { $valid_fields[] = sanitize_key( $tag->name ); }
+            if ( empty( $tag->name ) ) { continue; }
+            $name = sanitize_key( $tag->name );
+            $valid_fields[] = $name;
+            if ( isset( $tag->basetype ) && 'select' === $tag->basetype ) { $select_fields[] = $name; }
         }
         foreach ( array( 'name_field', 'message_field', 'email_field', 'country_field', 'consent_field', 'error_field' ) as $key ) {
             if ( empty( $profile[ $key ] ) || ! in_array( $profile[ $key ], $valid_fields, true ) ) { $profile[ $key ] = ''; }
@@ -86,8 +90,12 @@ class OliForge_CF7SG_Validator {
         // Belt-and-suspenders against stale saved data: a field with its own
         // dedicated check (email domain, country, consent) must never also
         // run through the generic content rules, e.g. "block @ character"
-        // would reject every legitimate email address.
-        $single_purpose_fields = array_filter( array( $profile['email_field'], $profile['country_field'], $profile['consent_field'] ) );
+        // would reject every legitimate email address. Same for select
+        // fields — invalid_select_fields() already checks their own options.
+        $single_purpose_fields = array_merge(
+            array_filter( array( $profile['email_field'], $profile['country_field'], $profile['consent_field'] ) ),
+            $select_fields
+        );
         $profile['content_fields'] = array_values( array_diff(
             array_intersect( isset( $profile['content_fields'] ) ? (array) $profile['content_fields'] : array(), $valid_fields ),
             $single_purpose_fields
