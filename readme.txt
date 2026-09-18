@@ -4,7 +4,7 @@ Tags: contact form 7, validation, spam, security, rate limit
 Requires at least: 6.2
 Requires PHP: 7.4
 Tested up to: 7.1
-Stable tag: 0.2.4
+Stable tag: 0.2.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,9 @@ OliForge CF7 Submission Guard validates Contact Form 7 submissions before mail i
 3. Open the "Submission Guard" menu in wp-admin, enable protection for the required CF7 forms, map their fields, and configure the shared rules.
 
 == Changelog ==
+
+= 0.2.5 =
+* Moved textdomain loading from plugins_loaded to init: since WordPress 6.7, loading a plugin's textdomain before the init hook can trigger a "_load_textdomain_just_in_time was called incorrectly" notice. The plugin still ships and loads its own bundled translations (it isn't distributed through WordPress.org language packs), so load_plugin_textdomain() itself stays — only its timing changed.
 
 = 0.2.4 =
 * Fixed: unchecking every field in a form's "Country fields" list and saving had no effect — the previous selection was silently kept instead of being cleared, because unchecked checkboxes submit nothing and the save handler couldn't tell that apart from the panel not being shown at all.

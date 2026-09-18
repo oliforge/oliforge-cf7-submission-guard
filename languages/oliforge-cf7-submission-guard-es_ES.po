@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: OliForge CF7 Submission Guard 0.2.4\n"
+"Project-Id-Version: OliForge CF7 Submission Guard 0.2.5\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/oliforge-cf7-"
 "submission-guard\n"
-"POT-Creation-Date: 2026-09-18T14:06:30+00:00\n"
+"POT-Creation-Date: 2026-09-18T14:16:34+00:00\n"
 "PO-Revision-Date: 2026-09-18 10:39+0000\n"
 "Last-Translator: OliForge <support@oliforge.com>\n"
 "Language-Team: Spanish\n"
@@ -42,7 +42,7 @@ msgstr "OliForge"
 msgid "Form %s"
 msgstr "Formulario %s"
 
-#: includes/class-oliforge-cf7sg-plugin.php:71
+#: includes/class-oliforge-cf7sg-plugin.php:76
 msgid ""
 "OliForge CF7 Submission Guard requires Contact Form 7 to be installed and "
 "active."
@@ -540,4 +540,3 @@ msgstr "No hay entradas en el registro."
 #: includes/class-oliforge-cf7sg-settings.php:788
 msgid "Unauthorized."
 msgstr "No autorizado."
-

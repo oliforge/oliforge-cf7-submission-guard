@@ -12,7 +12,12 @@ final class OliForge_CF7SG_Plugin {
     }
 
     public function boot() {
-        add_action( 'plugins_loaded', array( $this, 'init' ) );
+        // Since WordPress 6.7, loading a textdomain before the init hook
+        // can trigger a "_load_textdomain_just_in_time was called
+        // incorrectly" notice — load_plugin_textdomain() is the first
+        // statement in init() below, so moving the whole callback here is
+        // enough to keep it clear of that without splitting the method.
+        add_action( 'init', array( $this, 'init' ) );
         add_action( 'oliforge_cf7sg_daily_cleanup', array( 'OliForge_CF7SG_Logger', 'cleanup_expired' ) );
     }
 
