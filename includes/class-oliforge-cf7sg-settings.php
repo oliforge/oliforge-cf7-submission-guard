@@ -30,6 +30,7 @@ class OliForge_CF7SG_Settings {
             'block_email_patterns'    => 1,
             'block_html'              => 1,
             'block_bbcode'            => 0,
+            'validate_select_options' => 1,
             'max_digits_percent'      => 0,
             'max_uppercase_percent'   => 0,
             'forbidden_words'         => '',
@@ -57,6 +58,7 @@ class OliForge_CF7SG_Settings {
             'msg_bbcode'              => 'BBCode markup is not allowed in this field.',
             'msg_forbidden'           => 'This field contains prohibited content.',
             'msg_country'             => 'Please select a valid country.',
+            'msg_invalid_option'      => 'Please select a valid option.',
             'msg_domain'              => 'This email domain is not allowed.',
             'msg_rate_limit'          => 'Too many submissions. Please try again later.',
             'msg_too_fast'            => 'The form was submitted too quickly. Please try again.',
@@ -135,7 +137,7 @@ class OliForge_CF7SG_Settings {
         // integration is active; preserve their stored value instead of wiping
         // it out when the panel (and so the POST field) is absent.
         $current = self::get();
-        $checkboxes = array( 'enabled','required_consent','block_urls','block_at','block_email_patterns','block_html','block_bbcode','rate_limit_enabled','min_time_enabled','duplicate_enabled','logging_enabled','log_success' );
+        $checkboxes = array( 'enabled','required_consent','block_urls','block_at','block_email_patterns','block_html','block_bbcode','validate_select_options','rate_limit_enabled','min_time_enabled','duplicate_enabled','logging_enabled','log_success' );
         foreach ( $checkboxes as $key ) {
             $out[ $key ] = empty( $input[ $key ] ) ? 0 : 1;
         }
@@ -525,6 +527,8 @@ class OliForge_CF7SG_Settings {
                         <?php $this->toggle( 'block_html', __( 'Block HTML tags', 'oliforge-cf7-submission-guard' ), $s ); ?>
                         <?php $this->toggle( 'block_bbcode', __( 'Block BBCode-like markup', 'oliforge-cf7-submission-guard' ), $s ); ?>
                         <hr class="oliforge-divider">
+                        <?php $this->toggle( 'validate_select_options', __( 'Reject select fields whose value isn\'t one of their own options', 'oliforge-cf7-submission-guard' ), $s, __( 'Applies automatically to every [select] field on a protected form, independent of the fields checked above — catches scripted submissions that bypass the dropdown.', 'oliforge-cf7-submission-guard' ) ); ?>
+                        <hr class="oliforge-divider">
                         <div class="oliforge-field-grid">
                             <?php $this->text_field( 'max_digits_percent', __( 'Max digits % (0 = disabled)', 'oliforge-cf7-submission-guard' ), $s, '', 'number', 0 ); ?>
                             <?php $this->text_field( 'max_uppercase_percent', __( 'Max uppercase % (0 = disabled)', 'oliforge-cf7-submission-guard' ), $s, '', 'number', 0 ); ?>
@@ -597,6 +601,7 @@ class OliForge_CF7SG_Settings {
                             'msg_bbcode'        => __( 'BBCode detected', 'oliforge-cf7-submission-guard' ),
                             'msg_forbidden'     => __( 'Forbidden content', 'oliforge-cf7-submission-guard' ),
                             'msg_country'       => __( 'Invalid country', 'oliforge-cf7-submission-guard' ),
+                            'msg_invalid_option' => __( 'Invalid select option', 'oliforge-cf7-submission-guard' ),
                             'msg_domain'        => __( 'Blocked email domain', 'oliforge-cf7-submission-guard' ),
                             'msg_rate_limit'    => __( 'Rate limit', 'oliforge-cf7-submission-guard' ),
                             'msg_too_fast'      => __( 'Too fast', 'oliforge-cf7-submission-guard' ),

@@ -178,6 +178,38 @@ class OliForge_CF7SG_Validator {
         return ! in_array( $value, $allowed, true );
     }
 
+    /**
+     * Structural check for CF7's own [select ...] tags: rejects any
+     * submitted value that isn't one of the tag's own declared options,
+     * regardless of whether the field is in content_fields — a scripted
+     * submission that bypasses the dropdown and POSTs an arbitrary value
+     * would otherwise sail through untouched. Deliberately keyed off
+     * basetype === 'select' only, so it never touches country_select
+     * (which has its own dedicated, differently-sourced check).
+     */
+    private function invalid_select_fields() {
+        $form = function_exists( 'wpcf7_get_current_contact_form' ) ? wpcf7_get_current_contact_form() : null;
+        if ( ! $form || ! method_exists( $form, 'scan_form_tags' ) ) { return array(); }
+        $invalid = array();
+        foreach ( (array) $form->scan_form_tags() as $tag ) {
+            if ( empty( $tag->name ) || ! isset( $tag->basetype ) || 'select' !== $tag->basetype ) { continue; }
+            $name = sanitize_key( $tag->name );
+            if ( ! isset( $_POST[ $name ] ) ) { continue; }
+            $posted = wp_unslash( $_POST[ $name ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Contact Form 7 validates the form request.
+            $posted = is_array( $posted ) ? $posted : array( $posted );
+            $posted = array_values( array_filter( array_map( static function ( $v ) {
+                return trim( sanitize_text_field( (string) $v ) );
+            }, $posted ), static function ( $v ) { return '' !== $v; } ) );
+            if ( ! $posted ) { continue; }
+            $allowed = array_map( 'strval', (array) $tag->values );
+            if ( ! $allowed ) { continue; }
+            foreach ( $posted as $value ) {
+                if ( ! in_array( $value, $allowed, true ) ) { $invalid[] = $name; break; }
+            }
+        }
+        return $invalid;
+    }
+
     private function email_domain( $email ) {
         $at = strrpos( $email, '@' );
         if ( false === $at ) { return ''; }
@@ -269,6 +301,12 @@ class OliForge_CF7SG_Validator {
         if ( ! empty( $s['required_consent'] ) && $p['consent_field'] ) {
             $consent = $this->raw( $p['consent_field'] );
             if ( '' === $consent ) { $this->add_event( 'consent_missing', $p['consent_field'], $s['msg_consent'] ); }
+        }
+
+        if ( ! empty( $s['validate_select_options'] ) ) {
+            foreach ( $this->invalid_select_fields() as $field ) {
+                $this->add_event( 'invalid_option', $field, $s['msg_invalid_option'] );
+            }
         }
 
         $numeric_form_id = $this->numeric_form_id();

@@ -4,7 +4,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/oliforge-cf7-submission-guard\n"
 "Last-Translator: OliForge <support@oliforge.com>\n"
 "Language-Team: Spanish\n"
-"PO-Revision-Date: 2026-09-18 09:24+0000\n"
+"PO-Revision-Date: 2026-09-18 10:39+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -14,6 +14,24 @@ msgstr ""
 "X-Domain: oliforge-cf7-submission-guard\n"
 
 
+#: oliforge-cf7-submission-guard.php
+#: includes/class-oliforge-cf7sg-settings.php:82
+#. Plugin Name of the plugin
+msgid "OliForge CF7 Submission Guard"
+msgstr "OliForge CF7 Submission Guard"
+
+#: oliforge-cf7-submission-guard.php
+#. Description of the plugin
+msgid "Configurable server-side submission validation and lightweight logging for Contact Form 7."
+msgstr "Validación configurable en el servidor de los envíos y registro ligero para Contact Form 7."
+
+#: oliforge-cf7-submission-guard.php
+#: includes/class-oliforge-cf7sg-settings.php:328
+#: includes/class-oliforge-cf7sg-settings.php:330
+#. Author of the plugin
+msgid "OliForge"
+msgstr "OliForge"
+
 #: includes/class-oliforge-cf7sg-forms.php:35
 msgid "Form %s"
 msgstr "Formulario %s"
@@ -22,448 +40,455 @@ msgstr "Formulario %s"
 msgid "OliForge CF7 Submission Guard requires Contact Form 7 to be installed and active."
 msgstr "OliForge CF7 Submission Guard requiere que Contact Form 7 esté instalado y activo."
 
-#: includes/class-oliforge-cf7sg-settings.php:80
-msgid "OliForge CF7 Submission Guard"
-msgstr "OliForge CF7 Submission Guard"
-
-#: includes/class-oliforge-cf7sg-settings.php:81
-#: includes/class-oliforge-cf7sg-settings.php:317
+#: includes/class-oliforge-cf7sg-settings.php:83
+#: includes/class-oliforge-cf7sg-settings.php:335
 msgid "Submission Guard"
 msgstr "Submission Guard"
 
-#: includes/class-oliforge-cf7sg-settings.php:90
+#: includes/class-oliforge-cf7sg-settings.php:92
 msgid "OliForge CF7 Submission Guard Dashboard"
 msgstr "OliForge CF7 Submission Guard: panel de control"
 
-#: includes/class-oliforge-cf7sg-settings.php:91
-#: includes/class-oliforge-cf7sg-settings.php:330
-#: includes/class-oliforge-cf7sg-settings.php:352
+#: includes/class-oliforge-cf7sg-settings.php:93
+#: includes/class-oliforge-cf7sg-settings.php:348
+#: includes/class-oliforge-cf7sg-settings.php:370
 msgid "Dashboard"
 msgstr "Panel de control"
 
-#: includes/class-oliforge-cf7sg-settings.php:98
+#: includes/class-oliforge-cf7sg-settings.php:100
 msgid "OliForge CF7 Submission Guard Settings"
 msgstr "OliForge CF7 Submission Guard: ajustes"
 
-#: includes/class-oliforge-cf7sg-settings.php:99
-#: includes/class-oliforge-cf7sg-settings.php:331
-#: includes/class-oliforge-cf7sg-settings.php:448
+#: includes/class-oliforge-cf7sg-settings.php:101
+#: includes/class-oliforge-cf7sg-settings.php:349
+#: includes/class-oliforge-cf7sg-settings.php:466
 msgid "Settings"
 msgstr "Ajustes"
 
-#: includes/class-oliforge-cf7sg-settings.php:106
+#: includes/class-oliforge-cf7sg-settings.php:108
 msgid "OliForge CF7 Submission Guard Logs"
 msgstr "OliForge CF7 Submission Guard: registros"
 
-#: includes/class-oliforge-cf7sg-settings.php:107
-#: includes/class-oliforge-cf7sg-settings.php:332
-#: includes/class-oliforge-cf7sg-settings.php:634
+#: includes/class-oliforge-cf7sg-settings.php:109
+#: includes/class-oliforge-cf7sg-settings.php:350
+#: includes/class-oliforge-cf7sg-settings.php:666
 msgid "Logs"
 msgstr "Registros"
 
-#: includes/class-oliforge-cf7sg-settings.php:270
+#: includes/class-oliforge-cf7sg-settings.php:281
 msgid "Not assigned"
 msgstr "No asignado"
 
-#: includes/class-oliforge-cf7sg-settings.php:292
+#: includes/class-oliforge-cf7sg-settings.php:309
 msgid "Fields checked by content rules"
 msgstr "Campos verificados por las reglas de contenido"
 
-#: includes/class-oliforge-cf7sg-settings.php:310
-#: includes/class-oliforge-cf7sg-settings.php:312
-msgid "OliForge"
-msgstr "OliForge"
-
-#: includes/class-oliforge-cf7sg-settings.php:313
+#: includes/class-oliforge-cf7sg-settings.php:331
 msgid "Engineering without complexity."
 msgstr "Ingeniería sin complicaciones."
 
-#: includes/class-oliforge-cf7sg-settings.php:358
+#: includes/class-oliforge-cf7sg-settings.php:376
 msgid "Protection is currently disabled."
 msgstr "La protección está actualmente desactivada."
 
-#: includes/class-oliforge-cf7sg-settings.php:360
+#: includes/class-oliforge-cf7sg-settings.php:378
 msgid "Protection is enabled in monitor mode: rule matches are logged but submissions are not blocked."
 msgstr "La protección está activada en modo de supervisión: las coincidencias de reglas se registran, pero los envíos no se bloquean."
 
-#: includes/class-oliforge-cf7sg-settings.php:362
+#: includes/class-oliforge-cf7sg-settings.php:380
 msgid "Protection is enabled and enforcing rules on Contact Form 7 submissions."
 msgstr "La protección está activada y aplica las reglas a los envíos de Contact Form 7."
 
-#: includes/class-oliforge-cf7sg-settings.php:366
+#: includes/class-oliforge-cf7sg-settings.php:384
 msgid "Disabled"
 msgstr "Desactivada"
 
-#: includes/class-oliforge-cf7sg-settings.php:368
-#: includes/class-oliforge-cf7sg-settings.php:466
+#: includes/class-oliforge-cf7sg-settings.php:386
+#: includes/class-oliforge-cf7sg-settings.php:484
 msgid "Monitor only"
 msgstr "Solo supervisión"
 
-#: includes/class-oliforge-cf7sg-settings.php:370
+#: includes/class-oliforge-cf7sg-settings.php:388
 msgid "Enforcing"
 msgstr "Aplicando"
 
-#: includes/class-oliforge-cf7sg-settings.php:375
+#: includes/class-oliforge-cf7sg-settings.php:393
 msgid "Blocked, last 30 days"
 msgstr "Bloqueados, últimos 30 días"
 
-#: includes/class-oliforge-cf7sg-settings.php:376
+#: includes/class-oliforge-cf7sg-settings.php:394
 msgid "Monitored matches, last 30 days"
 msgstr "Coincidencias monitorizadas, últimos 30 días"
 
-#: includes/class-oliforge-cf7sg-settings.php:377
+#: includes/class-oliforge-cf7sg-settings.php:395
 msgid "Allowed (logged), last 30 days"
 msgstr "Permitidos (registrados), últimos 30 días"
 
-#: includes/class-oliforge-cf7sg-settings.php:378
+#: includes/class-oliforge-cf7sg-settings.php:396
 msgid "Off"
 msgstr "Desactivado"
 
-#: includes/class-oliforge-cf7sg-settings.php:378
-#: includes/class-oliforge-cf7sg-settings.php:574
+#: includes/class-oliforge-cf7sg-settings.php:396
+#: includes/class-oliforge-cf7sg-settings.php:606
 msgid "Rate limit"
 msgstr "Límite de frecuencia"
 
-#: includes/class-oliforge-cf7sg-settings.php:383
+#: includes/class-oliforge-cf7sg-settings.php:401
 msgid "Most triggered rules, last 30 days"
 msgstr "Reglas más activadas, últimos 30 días"
 
-#: includes/class-oliforge-cf7sg-settings.php:385
+#: includes/class-oliforge-cf7sg-settings.php:403
 msgid "No rule matches in this period."
 msgstr "No hay coincidencias de reglas en este período."
 
-#: includes/class-oliforge-cf7sg-settings.php:388
-#: includes/class-oliforge-cf7sg-settings.php:405
-#: includes/class-oliforge-cf7sg-settings.php:652
+#: includes/class-oliforge-cf7sg-settings.php:406
+#: includes/class-oliforge-cf7sg-settings.php:423
+#: includes/class-oliforge-cf7sg-settings.php:684
 msgid "Rule"
 msgstr "Regla"
 
-#: includes/class-oliforge-cf7sg-settings.php:388
+#: includes/class-oliforge-cf7sg-settings.php:406
 msgid "Count"
 msgstr "Cantidad"
 
-#: includes/class-oliforge-cf7sg-settings.php:399
+#: includes/class-oliforge-cf7sg-settings.php:417
 msgid "Recent activity"
 msgstr "Actividad reciente"
 
-#: includes/class-oliforge-cf7sg-settings.php:402
+#: includes/class-oliforge-cf7sg-settings.php:420
 msgid "No log entries yet."
 msgstr "Aún no hay entradas en el registro."
 
-#: includes/class-oliforge-cf7sg-settings.php:405
-#: includes/class-oliforge-cf7sg-settings.php:649
+#: includes/class-oliforge-cf7sg-settings.php:423
+#: includes/class-oliforge-cf7sg-settings.php:681
 msgid "Date"
 msgstr "Fecha"
 
-#: includes/class-oliforge-cf7sg-settings.php:405
-#: includes/class-oliforge-cf7sg-settings.php:651
+#: includes/class-oliforge-cf7sg-settings.php:423
+#: includes/class-oliforge-cf7sg-settings.php:683
 msgid "Result"
 msgstr "Resultado"
 
-#: includes/class-oliforge-cf7sg-settings.php:416
+#: includes/class-oliforge-cf7sg-settings.php:434
 msgid "View full log"
 msgstr "Ver registro completo"
 
-#: includes/class-oliforge-cf7sg-settings.php:431
+#: includes/class-oliforge-cf7sg-settings.php:449
 msgid "General"
 msgstr "General"
 
-#: includes/class-oliforge-cf7sg-settings.php:432
+#: includes/class-oliforge-cf7sg-settings.php:450
 msgid "Forms"
 msgstr "Formularios"
 
-#: includes/class-oliforge-cf7sg-settings.php:433
+#: includes/class-oliforge-cf7sg-settings.php:451
 msgid "Content rules"
 msgstr "Reglas de contenido"
 
-#: includes/class-oliforge-cf7sg-settings.php:434
+#: includes/class-oliforge-cf7sg-settings.php:452
 msgid "Email domains"
 msgstr "Dominios de correo"
 
-#: includes/class-oliforge-cf7sg-settings.php:435
+#: includes/class-oliforge-cf7sg-settings.php:453
 msgid "Rate limit & timing"
 msgstr "Límite de frecuencia y tiempos"
 
-#: includes/class-oliforge-cf7sg-settings.php:436
+#: includes/class-oliforge-cf7sg-settings.php:454
 msgid "Consent"
 msgstr "Consentimiento"
 
-#: includes/class-oliforge-cf7sg-settings.php:437
+#: includes/class-oliforge-cf7sg-settings.php:455
 msgid "Logging"
 msgstr "Registro"
 
-#: includes/class-oliforge-cf7sg-settings.php:438
+#: includes/class-oliforge-cf7sg-settings.php:456
 msgid "Error messages"
 msgstr "Mensajes de error"
 
-#: includes/class-oliforge-cf7sg-settings.php:442
+#: includes/class-oliforge-cf7sg-settings.php:460
 msgid "Country"
 msgstr "País"
 
-#: includes/class-oliforge-cf7sg-settings.php:451
+#: includes/class-oliforge-cf7sg-settings.php:469
 msgid "Server-side submission rules for Contact Form 7. Field names must match the CF7 form-tag names."
 msgstr "Reglas de envío en el servidor para Contact Form 7. Los nombres de los campos deben coincidir con los nombres de las etiquetas del formulario CF7."
 
-#: includes/class-oliforge-cf7sg-settings.php:464
+#: includes/class-oliforge-cf7sg-settings.php:482
 msgid "Enable protection"
 msgstr "Activar protección"
 
-#: includes/class-oliforge-cf7sg-settings.php:466
+#: includes/class-oliforge-cf7sg-settings.php:484
 msgid "Mode"
 msgstr "Modo"
 
-#: includes/class-oliforge-cf7sg-settings.php:466
+#: includes/class-oliforge-cf7sg-settings.php:484
 msgid "Enforce"
 msgstr "Aplicar"
 
-#: includes/class-oliforge-cf7sg-settings.php:471
+#: includes/class-oliforge-cf7sg-settings.php:489
 msgid "No Contact Form 7 forms were found."
 msgstr "No se encontraron formularios de Contact Form 7."
 
-#: includes/class-oliforge-cf7sg-settings.php:476
+#: includes/class-oliforge-cf7sg-settings.php:494
 msgid "Protect this form"
 msgstr "Proteger este formulario"
 
-#: includes/class-oliforge-cf7sg-settings.php:479
+#: includes/class-oliforge-cf7sg-settings.php:497
 msgid "Name field"
 msgstr "Campo de nombre"
 
-#: includes/class-oliforge-cf7sg-settings.php:480
+#: includes/class-oliforge-cf7sg-settings.php:498
 msgid "Maximum name length"
 msgstr "Longitud máxima del nombre"
 
-#: includes/class-oliforge-cf7sg-settings.php:481
+#: includes/class-oliforge-cf7sg-settings.php:501
 msgid "Message field"
 msgstr "Campo de mensaje"
 
-#: includes/class-oliforge-cf7sg-settings.php:482
+#: includes/class-oliforge-cf7sg-settings.php:502
 msgid "Minimum message length"
 msgstr "Longitud mínima del mensaje"
 
-#: includes/class-oliforge-cf7sg-settings.php:483
+#: includes/class-oliforge-cf7sg-settings.php:503
 msgid "Maximum message length (0 = disabled)"
 msgstr "Longitud máxima del mensaje (0 = desactivado)"
 
-#: includes/class-oliforge-cf7sg-settings.php:484
+#: includes/class-oliforge-cf7sg-settings.php:506
 msgid "Email field"
 msgstr "Campo de correo"
 
-#: includes/class-oliforge-cf7sg-settings.php:485
+#: includes/class-oliforge-cf7sg-settings.php:507
 msgid "Country field"
 msgstr "Campo de país"
 
-#: includes/class-oliforge-cf7sg-settings.php:486
+#: includes/class-oliforge-cf7sg-settings.php:508
 msgid "Consent field"
 msgstr "Campo de consentimiento"
 
-#: includes/class-oliforge-cf7sg-settings.php:487
+#: includes/class-oliforge-cf7sg-settings.php:509
 msgid "Generic error field"
 msgstr "Campo de error genérico"
 
-#: includes/class-oliforge-cf7sg-settings.php:495
+#: includes/class-oliforge-cf7sg-settings.php:509
+msgid "Used when a matched rule has no field of its own to attach the error to (e.g. rate limiting, too-fast submission)."
+msgstr "Se usa cuando una regla activada no tiene un campo propio al que asociar el error (por ejemplo, límite de frecuencia o envío demasiado rápido)."
+
+#: includes/class-oliforge-cf7sg-settings.php:524
 msgid "Block URLs/domains"
 msgstr "Bloquear URL/dominios"
 
-#: includes/class-oliforge-cf7sg-settings.php:496
+#: includes/class-oliforge-cf7sg-settings.php:525
 msgid "Block @ character"
 msgstr "Bloquear el carácter @"
 
-#: includes/class-oliforge-cf7sg-settings.php:497
+#: includes/class-oliforge-cf7sg-settings.php:526
 msgid "Block email patterns"
 msgstr "Bloquear patrones de correo"
 
-#: includes/class-oliforge-cf7sg-settings.php:498
+#: includes/class-oliforge-cf7sg-settings.php:527
 msgid "Block HTML tags"
 msgstr "Bloquear etiquetas HTML"
 
-#: includes/class-oliforge-cf7sg-settings.php:499
+#: includes/class-oliforge-cf7sg-settings.php:528
 msgid "Block BBCode-like markup"
 msgstr "Bloquear marcado tipo BBCode"
 
-#: includes/class-oliforge-cf7sg-settings.php:502
+#: includes/class-oliforge-cf7sg-settings.php:530
+msgid "Reject select fields whose value isn't one of their own options"
+msgstr "Rechazar campos de selección cuyo valor no esté entre sus propias opciones"
+
+#: includes/class-oliforge-cf7sg-settings.php:530
+msgid "Applies automatically to every [select] field on a protected form, independent of the fields checked above — catches scripted submissions that bypass the dropdown."
+msgstr "Se aplica automáticamente a todos los campos [select] de un formulario protegido, independientemente de los campos marcados arriba; detecta envíos automatizados que evitan el menú desplegable."
+
+#: includes/class-oliforge-cf7sg-settings.php:533
 msgid "Max digits % (0 = disabled)"
 msgstr "% máx. de dígitos (0 = desactivado)"
 
-#: includes/class-oliforge-cf7sg-settings.php:503
+#: includes/class-oliforge-cf7sg-settings.php:534
 msgid "Max uppercase % (0 = disabled)"
 msgstr "% máx. de mayúsculas (0 = desactivado)"
 
-#: includes/class-oliforge-cf7sg-settings.php:505
+#: includes/class-oliforge-cf7sg-settings.php:536
 msgid "Forbidden words/phrases, one per line"
 msgstr "Palabras o frases prohibidas, una por línea"
 
-#: includes/class-oliforge-cf7sg-settings.php:509
+#: includes/class-oliforge-cf7sg-settings.php:540
 msgid "Blocked domains"
 msgstr "Dominios bloqueados"
 
-#: includes/class-oliforge-cf7sg-settings.php:509
+#: includes/class-oliforge-cf7sg-settings.php:540
 msgid "One per line. Subdomains are blocked too."
 msgstr "Uno por línea. Los subdominios también se bloquean."
 
-#: includes/class-oliforge-cf7sg-settings.php:514
+#: includes/class-oliforge-cf7sg-settings.php:545
 msgid "Allowed values"
 msgstr "Valores permitidos"
 
-#: includes/class-oliforge-cf7sg-settings.php:514
+#: includes/class-oliforge-cf7sg-settings.php:545
 msgid "One per line. If empty, the plugin validates against the CF7 select tag values when available."
 msgstr "Uno por línea. Si está vacío, el plugin valida con los valores de la etiqueta select de CF7, si están disponibles."
 
-#: includes/class-oliforge-cf7sg-settings.php:519
+#: includes/class-oliforge-cf7sg-settings.php:550
 msgid "Enable IP rate limiting"
 msgstr "Activar límite de frecuencia por IP"
 
-#: includes/class-oliforge-cf7sg-settings.php:521
+#: includes/class-oliforge-cf7sg-settings.php:552
 msgid "Maximum attempts"
 msgstr "Intentos máximos"
 
-#: includes/class-oliforge-cf7sg-settings.php:522
+#: includes/class-oliforge-cf7sg-settings.php:553
 msgid "Period, minutes"
 msgstr "Periodo, minutos"
 
-#: includes/class-oliforge-cf7sg-settings.php:525
+#: includes/class-oliforge-cf7sg-settings.php:556
 msgid "Enable minimum completion time"
 msgstr "Activar tiempo mínimo de cumplimentación"
 
-#: includes/class-oliforge-cf7sg-settings.php:526
+#: includes/class-oliforge-cf7sg-settings.php:557
 msgid "Minimum seconds"
 msgstr "Segundos mínimos"
 
-#: includes/class-oliforge-cf7sg-settings.php:528
+#: includes/class-oliforge-cf7sg-settings.php:559
 msgid "Block duplicate messages from same IP"
 msgstr "Bloquear mensajes duplicados desde la misma IP"
 
-#: includes/class-oliforge-cf7sg-settings.php:529
+#: includes/class-oliforge-cf7sg-settings.php:560
 msgid "Duplicate window, minutes"
 msgstr "Ventana de duplicados, minutos"
 
-#: includes/class-oliforge-cf7sg-settings.php:533
+#: includes/class-oliforge-cf7sg-settings.php:564
 msgid "Require configured consent field"
 msgstr "Requerir el campo de consentimiento configurado"
 
-#: includes/class-oliforge-cf7sg-settings.php:534
+#: includes/class-oliforge-cf7sg-settings.php:565
 msgid "The consent field is selected separately for each protected form."
 msgstr "El campo de consentimiento se selecciona por separado para cada formulario protegido."
 
-#: includes/class-oliforge-cf7sg-settings.php:538
+#: includes/class-oliforge-cf7sg-settings.php:569
 msgid "Enable security logging"
 msgstr "Activar registro de seguridad"
 
-#: includes/class-oliforge-cf7sg-settings.php:539
+#: includes/class-oliforge-cf7sg-settings.php:570
 msgid "Log successful submissions"
 msgstr "Registrar envíos correctos"
 
-#: includes/class-oliforge-cf7sg-settings.php:545
+#: includes/class-oliforge-cf7sg-settings.php:576
 msgid "IP storage"
 msgstr "Almacenamiento de IP"
 
-#: includes/class-oliforge-cf7sg-settings.php:548
+#: includes/class-oliforge-cf7sg-settings.php:579
 msgid "Anonymized"
 msgstr "Anonimizada"
 
-#: includes/class-oliforge-cf7sg-settings.php:549
+#: includes/class-oliforge-cf7sg-settings.php:580
 msgid "Full IP"
 msgstr "IP completa"
 
-#: includes/class-oliforge-cf7sg-settings.php:550
+#: includes/class-oliforge-cf7sg-settings.php:581
 msgid "Do not store"
 msgstr "No almacenar"
 
-#: includes/class-oliforge-cf7sg-settings.php:554
+#: includes/class-oliforge-cf7sg-settings.php:585
 msgid "Retention, days"
 msgstr "Retención, días"
 
-#: includes/class-oliforge-cf7sg-settings.php:556
+#: includes/class-oliforge-cf7sg-settings.php:587
 msgid "Name and message contents are never written to the plugin log. The submitted email address itself is never stored either — only its domain (e.g. \"example.com\"), to help spot patterns."
 msgstr "El contenido del nombre y del mensaje nunca se escribe en el registro del plugin. Tampoco se almacena la propia dirección de correo enviada, solo su dominio (por ejemplo, «example.com»), para ayudar a detectar patrones."
 
-#: includes/class-oliforge-cf7sg-settings.php:563
+#: includes/class-oliforge-cf7sg-settings.php:594
 msgid "Name too long"
 msgstr "Nombre demasiado largo"
 
-#: includes/class-oliforge-cf7sg-settings.php:564
+#: includes/class-oliforge-cf7sg-settings.php:595
 msgid "Message too short"
 msgstr "Mensaje demasiado corto"
 
-#: includes/class-oliforge-cf7sg-settings.php:565
+#: includes/class-oliforge-cf7sg-settings.php:596
 msgid "Message too long"
 msgstr "Mensaje demasiado largo"
 
-#: includes/class-oliforge-cf7sg-settings.php:566
+#: includes/class-oliforge-cf7sg-settings.php:597
 msgid "URL detected"
 msgstr "URL detectada"
 
-#: includes/class-oliforge-cf7sg-settings.php:567
+#: includes/class-oliforge-cf7sg-settings.php:598
 msgid "@ detected"
 msgstr "@ detectado"
 
-#: includes/class-oliforge-cf7sg-settings.php:568
+#: includes/class-oliforge-cf7sg-settings.php:599
 msgid "Email pattern detected"
 msgstr "Patrón de correo detectado"
 
-#: includes/class-oliforge-cf7sg-settings.php:569
+#: includes/class-oliforge-cf7sg-settings.php:600
 msgid "HTML detected"
 msgstr "HTML detectado"
 
-#: includes/class-oliforge-cf7sg-settings.php:570
+#: includes/class-oliforge-cf7sg-settings.php:601
 msgid "BBCode detected"
 msgstr "BBCode detectado"
 
-#: includes/class-oliforge-cf7sg-settings.php:571
+#: includes/class-oliforge-cf7sg-settings.php:602
 msgid "Forbidden content"
 msgstr "Contenido prohibido"
 
-#: includes/class-oliforge-cf7sg-settings.php:572
+#: includes/class-oliforge-cf7sg-settings.php:603
 msgid "Invalid country"
 msgstr "País no válido"
 
-#: includes/class-oliforge-cf7sg-settings.php:573
+#: includes/class-oliforge-cf7sg-settings.php:604
+msgid "Invalid select option"
+msgstr "Opción de selección no válida"
+
+#: includes/class-oliforge-cf7sg-settings.php:605
 msgid "Blocked email domain"
 msgstr "Dominio de correo bloqueado"
 
-#: includes/class-oliforge-cf7sg-settings.php:575
+#: includes/class-oliforge-cf7sg-settings.php:607
 msgid "Too fast"
 msgstr "Demasiado rápido"
 
-#: includes/class-oliforge-cf7sg-settings.php:576
+#: includes/class-oliforge-cf7sg-settings.php:608
 msgid "Duplicate"
 msgstr "Duplicado"
 
-#: includes/class-oliforge-cf7sg-settings.php:577
+#: includes/class-oliforge-cf7sg-settings.php:609
 msgid "Consent missing"
 msgstr "Falta el consentimiento"
 
-#: includes/class-oliforge-cf7sg-settings.php:637
+#: includes/class-oliforge-cf7sg-settings.php:669
 msgid "Latest 200 events. Name and message contents are never stored; the email address itself is never stored either, only its domain."
 msgstr "Los últimos 200 eventos. El contenido del nombre y del mensaje nunca se almacena; tampoco se almacena la dirección de correo en sí, solo su dominio."
 
-#: includes/class-oliforge-cf7sg-settings.php:642
+#: includes/class-oliforge-cf7sg-settings.php:674
 msgid "Clear all logs"
 msgstr "Borrar todos los registros"
 
-#: includes/class-oliforge-cf7sg-settings.php:650
+#: includes/class-oliforge-cf7sg-settings.php:682
 msgid "Form"
 msgstr "Formulario"
 
-#: includes/class-oliforge-cf7sg-settings.php:653
+#: includes/class-oliforge-cf7sg-settings.php:685
 msgid "Field"
 msgstr "Campo"
 
-#: includes/class-oliforge-cf7sg-settings.php:654
+#: includes/class-oliforge-cf7sg-settings.php:686
 msgid "Email domain"
 msgstr "Dominio de correo"
 
-#: includes/class-oliforge-cf7sg-settings.php:655
+#: includes/class-oliforge-cf7sg-settings.php:687
 msgid "IP"
 msgstr "IP"
 
-#: includes/class-oliforge-cf7sg-settings.php:656
+#: includes/class-oliforge-cf7sg-settings.php:688
 msgid "User agent"
 msgstr "User-Agent"
 
-#: includes/class-oliforge-cf7sg-settings.php:661
+#: includes/class-oliforge-cf7sg-settings.php:693
 msgid "No log entries."
 msgstr "No hay entradas en el registro."
 
-#: includes/class-oliforge-cf7sg-settings.php:685
+#: includes/class-oliforge-cf7sg-settings.php:717
 msgid "Unauthorized."
 msgstr "No autorizado."
