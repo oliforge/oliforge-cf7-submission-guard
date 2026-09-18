@@ -481,10 +481,12 @@ class OliForge_CF7SG_Settings {
                                     <?php $this->profile_field_select( $form_id, 'name_field', __( 'Name field', 'oliforge-cf7-submission-guard' ), $profile, $form['fields'] ); ?>
                                     <?php $this->profile_number_field( $form_id, 'name_max', __( 'Maximum name length', 'oliforge-cf7-submission-guard' ), $profile ); ?>
                                 </div>
-                                <div class="oliforge-field-grid">
+                                <div class="oliforge-field-row">
                                     <?php $this->profile_field_select( $form_id, 'message_field', __( 'Message field', 'oliforge-cf7-submission-guard' ), $profile, $form['fields'] ); ?>
                                     <?php $this->profile_number_field( $form_id, 'message_min', __( 'Minimum message length', 'oliforge-cf7-submission-guard' ), $profile ); ?>
                                     <?php $this->profile_number_field( $form_id, 'message_max', __( 'Maximum message length (0 = disabled)', 'oliforge-cf7-submission-guard' ), $profile ); ?>
+                                </div>
+                                <div class="oliforge-field-grid">
                                     <?php $this->profile_field_select( $form_id, 'email_field', __( 'Email field', 'oliforge-cf7-submission-guard' ), $profile, $form['fields'] ); ?>
                                     <?php if ( $country_select_active ) { $this->profile_field_select( $form_id, 'country_field', __( 'Country field', 'oliforge-cf7-submission-guard' ), $profile, $form['fields'] ); } ?>
                                     <?php $this->profile_field_select( $form_id, 'consent_field', __( 'Consent field', 'oliforge-cf7-submission-guard' ), $profile, $form['fields'] ); ?>
