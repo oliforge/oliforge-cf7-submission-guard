@@ -66,14 +66,21 @@ class OliForge_CF7SG_Validator {
         $profiles = isset( $this->settings['forms'] ) && is_array( $this->settings['forms'] ) ? $this->settings['forms'] : array();
         if ( '' === $form_id || empty( $profiles[ $form_id ] ) || empty( $profiles[ $form_id ]['enabled'] ) ) { return array(); }
 
+        $raw = $profiles[ $form_id ];
         $profile = wp_parse_args(
-            $profiles[ $form_id ],
+            $raw,
             array(
                 'name_field' => '', 'name_max' => 0, 'message_field' => '', 'message_min' => 0,
-                'message_max' => 0, 'email_field' => '', 'country_field' => '', 'consent_field' => '',
+                'message_max' => 0, 'email_field' => '', 'country_fields' => array(), 'consent_field' => '',
                 'error_field' => '', 'content_fields' => array(),
             )
         );
+        if ( ! isset( $raw['country_fields'] ) && ! empty( $raw['country_field'] ) ) {
+            // Migrate a profile saved before multi-field country support:
+            // carry its single legacy country_field forward so upgrading
+            // doesn't silently stop validating it.
+            $profile['country_fields'] = array( sanitize_key( $raw['country_field'] ) );
+        }
         $form = function_exists( 'wpcf7_get_current_contact_form' ) ? wpcf7_get_current_contact_form() : null;
         if ( ! $form || ! method_exists( $form, 'scan_form_tags' ) ) { return array(); }
         $valid_fields = array();
@@ -84,16 +91,21 @@ class OliForge_CF7SG_Validator {
             $valid_fields[] = $name;
             if ( isset( $tag->basetype ) && 'select' === $tag->basetype ) { $select_fields[] = $name; }
         }
-        foreach ( array( 'name_field', 'message_field', 'email_field', 'country_field', 'consent_field', 'error_field' ) as $key ) {
+        foreach ( array( 'name_field', 'message_field', 'email_field', 'consent_field', 'error_field' ) as $key ) {
             if ( empty( $profile[ $key ] ) || ! in_array( $profile[ $key ], $valid_fields, true ) ) { $profile[ $key ] = ''; }
         }
+        $profile['country_fields'] = array_values( array_intersect(
+            array_unique( (array) $profile['country_fields'] ),
+            $valid_fields
+        ) );
         // Belt-and-suspenders against stale saved data: a field with its own
         // dedicated check (email domain, country, consent) must never also
         // run through the generic content rules, e.g. "block @ character"
         // would reject every legitimate email address. Same for select
         // fields — invalid_select_fields() already checks their own options.
         $single_purpose_fields = array_merge(
-            array_filter( array( $profile['email_field'], $profile['country_field'], $profile['consent_field'] ) ),
+            array_filter( array( $profile['email_field'], $profile['consent_field'] ) ),
+            $profile['country_fields'],
             $select_fields
         );
         $profile['content_fields'] = array_values( array_diff(
@@ -166,27 +178,32 @@ class OliForge_CF7SG_Validator {
     private function validate_country( $field ) {
         $value = $this->raw( $field );
         if ( '' === $value ) { return false; }
+
+        $tag = $this->tag_by_name( $field );
+        $basetype = $tag && isset( $tag->basetype ) ? (string) $tag->basetype : '';
+
+        if (
+            $tag && 'country_select' === $basetype
+            && class_exists( 'OliForge_CF7_Country_Select' )
+            && method_exists( 'OliForge_CF7_Country_Select', 'get_allowed_country_codes' )
+        ) {
+            // A country_select field is always validated against Country
+            // Select's own resolution (admin allowlist, include/exclude,
+            // list:) — never the legacy allowed_countries setting below.
+            // Deferring to that setting first, as before, meant a
+            // leftover/stale value there could silently override a Pro
+            // list: option, and an unresolvable list: (unknown/deleted
+            // slug, or Pro inactive) would fail open instead of closed:
+            // Country Select itself now returns no codes for that case, so
+            // any non-empty submission is correctly rejected here too.
+            $allowed = OliForge_CF7_Country_Select::get_allowed_country_codes( $tag );
+            return ! in_array( $value, $allowed, true );
+        }
+
         $allowed = $this->lines( $this->settings['allowed_countries'] );
-        if ( ! $allowed ) {
-            $tag = $this->tag_by_name( $field );
-            $basetype = $tag && isset( $tag->basetype ) ? (string) $tag->basetype : '';
-            if (
-                $tag && 'country_select' === $basetype
-                && class_exists( 'OliForge_CF7_Country_Select' )
-                && method_exists( 'OliForge_CF7_Country_Select', 'get_allowed_country_codes' )
-            ) {
-                // Ask the companion plugin for exactly the codes this tag
-                // currently accepts (its admin allowlist, per-tag
-                // include/exclude, and Pro named lists via list:) instead of
-                // guessing from $tag->values, which for this custom tag type
-                // holds the placeholder text ("Select a country"), not a
-                // value list — using it directly would reject every real
-                // selection.
-                $allowed = OliForge_CF7_Country_Select::get_allowed_country_codes( $tag );
-            } elseif ( $tag && 'country_select' !== $basetype && isset( $tag->values ) ) {
-                // A genuine native CF7 [select]/[radio] tag with pipe values.
-                $allowed = array_map( 'strval', (array) $tag->values );
-            }
+        if ( ! $allowed && $tag && isset( $tag->values ) ) {
+            // A genuine native CF7 [select]/[radio] tag with pipe values.
+            $allowed = array_map( 'strval', (array) $tag->values );
         }
         if ( ! $allowed ) { return false; }
         return ! in_array( $value, $allowed, true );
@@ -328,8 +345,14 @@ class OliForge_CF7SG_Validator {
         $email = $this->raw( $p['email_field'] );
         if ( $p['email_field'] && $email && $this->blocked_domain( $email ) ) { $this->add_event( 'blocked_domain', $p['email_field'], $s['msg_domain'] ); }
 
-        if ( OliForge_CF7SG_Plugin::country_select_is_active() && $p['country_field'] && $this->validate_country( $p['country_field'] ) ) {
-            $this->add_event( 'invalid_country', $p['country_field'], $s['msg_country'] );
+        if ( OliForge_CF7SG_Plugin::country_select_is_active() ) {
+            // A form can have more than one country field (e.g. billing vs.
+            // shipping); each is resolved and validated independently.
+            foreach ( (array) $p['country_fields'] as $country_field ) {
+                if ( $country_field && $this->validate_country( $country_field ) ) {
+                    $this->add_event( 'invalid_country', $country_field, $s['msg_country'] );
+                }
+            }
         }
 
         if ( ! empty( $s['required_consent'] ) && $p['consent_field'] ) {

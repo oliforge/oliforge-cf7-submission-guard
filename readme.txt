@@ -4,7 +4,7 @@ Tags: contact form 7, validation, spam, security, rate limit
 Requires at least: 6.2
 Requires PHP: 7.4
 Tested up to: 7.1
-Stable tag: 0.2.2
+Stable tag: 0.2.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,11 @@ OliForge CF7 Submission Guard validates Contact Form 7 submissions before mail i
 3. Open the "Submission Guard" menu in wp-admin, enable protection for the required CF7 forms, map their fields, and configure the shared rules.
 
 == Changelog ==
+
+= 0.2.3 =
+* A country_select field is now always validated through OliForge CF7 Country Select's API — a leftover value in the (now-hidden) legacy allowed_countries setting could previously override a Pro list: option instead of the field's own configuration.
+* A protected form can now have more than one country field (e.g. billing vs. shipping): every country_select field is protected by default, and each is checked independently. The single "Country field" dropdown per form is replaced with a "Country fields" checkbox group.
+* country_select fields fail closed when Country Select itself can't resolve a list: option (unknown/deleted list, or Pro inactive): previously an unresolvable list silently fell back to accepting no value as invalid only if a legacy allowlist happened to also be empty; now it's always rejected.
 
 = 0.2.2 =
 * Country validation now uses OliForge CF7 Country Select's public `get_allowed_country_codes()` API (3.2.5+) when available, instead of a no-op: it checks the submitted value against exactly the set that field's admin allowlist, include/exclude options, and Pro named lists allow, and logs a genuine `invalid_country` block when it doesn't match.

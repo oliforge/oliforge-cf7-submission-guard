@@ -62,8 +62,23 @@ final class OliForge_CF7SG_Forms {
         $name = self::first_matching( $fields, isset( $legacy['name_field'] ) ? sanitize_key( $legacy['name_field'] ) : '', array( 'text' ) );
         $message = self::first_matching( $fields, isset( $legacy['message_field'] ) ? sanitize_key( $legacy['message_field'] ) : '', array( 'textarea', 'text' ) );
         $email = self::first_matching( $fields, isset( $legacy['email_field'] ) ? sanitize_key( $legacy['email_field'] ) : '', array( 'email' ) );
-        $country = self::first_matching( $fields, isset( $legacy['country_field'] ) ? sanitize_key( $legacy['country_field'] ) : '', array( 'country', 'country_select', 'select' ) );
         $consent = self::first_matching( $fields, isset( $legacy['consent_field'] ) ? sanitize_key( $legacy['consent_field'] ) : '', array( 'acceptance', 'checkbox' ) );
+
+        // Every dedicated country_select field is protected by default — a
+        // form can have more than one (e.g. billing/shipping), each
+        // resolved and validated independently against its own list:.
+        $country_fields = array();
+        foreach ( $fields as $field ) {
+            if ( 'country_select' === $field['basetype'] ) { $country_fields[] = $field['name']; }
+        }
+        if ( ! $country_fields && isset( $legacy['country_field'] ) ) {
+            // Legacy single-field setting from before multi-field support,
+            // or a plain CF7 [select] used as a country field without the
+            // Country Select plugin.
+            $legacy_country = self::first_matching( $fields, sanitize_key( $legacy['country_field'] ), array( 'country', 'country_select', 'select' ) );
+            if ( $legacy_country ) { $country_fields[] = $legacy_country; }
+        }
+
         $content = array();
         foreach ( preg_split( '/\R/', isset( $legacy['content_fields'] ) ? (string) $legacy['content_fields'] : '' ) as $field ) {
             $field = sanitize_key( $field );
@@ -79,7 +94,7 @@ final class OliForge_CF7SG_Forms {
             'message_min'    => isset( $legacy['message_min'] ) ? absint( $legacy['message_min'] ) : 30,
             'message_max'    => isset( $legacy['message_max'] ) ? absint( $legacy['message_max'] ) : 0,
             'email_field'    => $email,
-            'country_field'  => $country,
+            'country_fields' => array_values( array_unique( $country_fields ) ),
             'consent_field'  => $consent,
             'error_field'    => self::first_matching( $fields, isset( $legacy['error_field'] ) ? sanitize_key( $legacy['error_field'] ) : '', array_keys( self::types( $fields ) ) ),
             'content_fields' => array_values( array_unique( $content ) ),
@@ -101,7 +116,16 @@ final class OliForge_CF7SG_Forms {
     public static function for_admin( $profiles, $legacy ) {
         $profiles = is_array( $profiles ) ? $profiles : array();
         foreach ( self::all() as $id => $form ) {
-            if ( ! isset( $profiles[ $id ] ) ) { $profiles[ $id ] = self::default_profile( $form, $legacy, false ); }
+            if ( ! isset( $profiles[ $id ] ) ) {
+                $profiles[ $id ] = self::default_profile( $form, $legacy, false );
+            } elseif ( ! isset( $profiles[ $id ]['country_fields'] ) ) {
+                // Migrate a profile saved before multi-field country
+                // support: carry its single legacy country_field forward
+                // as-is, so the settings screen shows what's actually still
+                // being validated instead of an empty checkbox group.
+                $legacy_field = ! empty( $profiles[ $id ]['country_field'] ) ? sanitize_key( $profiles[ $id ]['country_field'] ) : '';
+                $profiles[ $id ]['country_fields'] = $legacy_field ? array( $legacy_field ) : array();
+            }
         }
         return $profiles;
     }
