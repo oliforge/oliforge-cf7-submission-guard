@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: OliForge CF7 Submission Guard 0.2.1\n"
+"Project-Id-Version: OliForge CF7 Submission Guard 0.2.4\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/oliforge-cf7-"
 "submission-guard\n"
 "POT-Creation-Date: 2026-09-18T14:06:30+00:00\n"

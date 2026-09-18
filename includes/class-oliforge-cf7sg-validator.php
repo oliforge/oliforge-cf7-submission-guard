@@ -175,29 +175,45 @@ class OliForge_CF7SG_Validator {
         return ( count( $upper[0] ) / $total ) * 100;
     }
 
+    /**
+     * @return array{invalid: bool, unresolved: bool} "unresolved" means
+     * Country Select itself couldn't resolve the field's list: at all
+     * (unknown/deleted slug, or Pro inactive) — a site misconfiguration
+     * worth its own log rule, distinct from a visitor simply submitting a
+     * value that isn't in a list that resolved fine.
+     */
     private function validate_country( $field ) {
         $value = $this->raw( $field );
-        if ( '' === $value ) { return false; }
+        if ( '' === $value ) { return array( 'invalid' => false, 'unresolved' => false ); }
 
         $tag = $this->tag_by_name( $field );
         $basetype = $tag && isset( $tag->basetype ) ? (string) $tag->basetype : '';
 
-        if (
-            $tag && 'country_select' === $basetype
-            && class_exists( 'OliForge_CF7_Country_Select' )
-            && method_exists( 'OliForge_CF7_Country_Select', 'get_allowed_country_codes' )
-        ) {
+        if ( $tag && 'country_select' === $basetype && class_exists( 'OliForge_CF7_Country_Select' ) ) {
             // A country_select field is always validated against Country
             // Select's own resolution (admin allowlist, include/exclude,
             // list:) — never the legacy allowed_countries setting below.
             // Deferring to that setting first, as before, meant a
             // leftover/stale value there could silently override a Pro
-            // list: option, and an unresolvable list: (unknown/deleted
-            // slug, or Pro inactive) would fail open instead of closed:
-            // Country Select itself now returns no codes for that case, so
-            // any non-empty submission is correctly rejected here too.
-            $allowed = OliForge_CF7_Country_Select::get_allowed_country_codes( $tag );
-            return ! in_array( $value, $allowed, true );
+            // list: option.
+            if ( method_exists( 'OliForge_CF7_Country_Select', 'get_country_context' ) ) {
+                // Structured API (Country Select 3.2.7+): reports whether
+                // the list: actually resolved, not just the resulting code
+                // set, so an unresolvable list: can be logged and rejected
+                // instead of just rejected the same as a bad user pick.
+                $context = OliForge_CF7_Country_Select::get_country_context( $tag );
+                if ( ! $context['resolved'] ) {
+                    return array( 'invalid' => true, 'unresolved' => true );
+                }
+                return array( 'invalid' => ! in_array( $value, $context['countries'], true ), 'unresolved' => false );
+            }
+            if ( method_exists( 'OliForge_CF7_Country_Select', 'get_allowed_country_codes' ) ) {
+                // Older Country Select (< 3.2.7): codes-only API. An
+                // unresolvable list: still fails closed (empty codes), just
+                // without a distinguishable reason to log.
+                $allowed = OliForge_CF7_Country_Select::get_allowed_country_codes( $tag );
+                return array( 'invalid' => ! in_array( $value, $allowed, true ), 'unresolved' => false );
+            }
         }
 
         $allowed = $this->lines( $this->settings['allowed_countries'] );
@@ -205,8 +221,8 @@ class OliForge_CF7SG_Validator {
             // A genuine native CF7 [select]/[radio] tag with pipe values.
             $allowed = array_map( 'strval', (array) $tag->values );
         }
-        if ( ! $allowed ) { return false; }
-        return ! in_array( $value, $allowed, true );
+        if ( ! $allowed ) { return array( 'invalid' => false, 'unresolved' => false ); }
+        return array( 'invalid' => ! in_array( $value, $allowed, true ), 'unresolved' => false );
     }
 
     /**
@@ -349,8 +365,16 @@ class OliForge_CF7SG_Validator {
             // A form can have more than one country field (e.g. billing vs.
             // shipping); each is resolved and validated independently.
             foreach ( (array) $p['country_fields'] as $country_field ) {
-                if ( $country_field && $this->validate_country( $country_field ) ) {
-                    $this->add_event( 'invalid_country', $country_field, $s['msg_country'] );
+                if ( ! $country_field ) { continue; }
+                $check = $this->validate_country( $country_field );
+                if ( $check['invalid'] ) {
+                    // Same visitor-facing message either way (never leak
+                    // config state to the front end), but a distinct log
+                    // rule for "the list itself is misconfigured" vs. "a
+                    // submitted value just isn't in it" — the former needs
+                    // an admin's attention, not a spam-filtering response.
+                    $rule = $check['unresolved'] ? 'country_list_unresolved' : 'invalid_country';
+                    $this->add_event( $rule, $country_field, $s['msg_country'] );
                 }
             }
         }

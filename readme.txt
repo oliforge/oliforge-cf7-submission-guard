@@ -24,7 +24,8 @@ OliForge CF7 Submission Guard validates Contact Form 7 submissions before mail i
 
 = 0.2.4 =
 * Fixed: unchecking every field in a form's "Country fields" list and saving had no effect — the previous selection was silently kept instead of being cleared, because unchecked checkboxes submit nothing and the save handler couldn't tell that apart from the panel not being shown at all.
-* Refreshed translation strings for the 0.2.3 country-field changes ("Country fields" checkbox group) across all 5 bundled locales.
+* Country validation now uses OliForge CF7 Country Select's structured `get_country_context()` API (3.2.7+) when available: an unresolvable list: (unknown/deleted slug, or Pro inactive) is now logged as its own `country_list_unresolved` rule, distinct from `invalid_country` for a genuinely bad submission — the visitor sees the same message either way, but the two are easy to tell apart in the Logs and dashboard rule breakdown.
+* Refreshed translation strings for the 0.2.3 country-field changes ("Country fields" checkbox group) across all 5 bundled locales, and fixed their Project-Id-Version header, which msgmerge doesn't update on its own.
 
 = 0.2.3 =
 * A country_select field is now always validated through OliForge CF7 Country Select's API — a leftover value in the (now-hidden) legacy allowed_countries setting could previously override a Pro list: option instead of the field's own configuration.
