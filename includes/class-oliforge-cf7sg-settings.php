@@ -180,8 +180,21 @@ class OliForge_CF7SG_Settings {
                 $value = isset( $posted[ $key ] ) ? sanitize_key( $posted[ $key ] ) : '';
                 $profile[ $key ] = in_array( $value, $valid_fields, true ) ? $value : '';
             }
-            $country_value = isset( $posted['country_field'] ) ? sanitize_key( $posted['country_field'] ) : ( isset( $existing['country_field'] ) ? sanitize_key( $existing['country_field'] ) : '' );
-            $profile['country_field'] = in_array( $country_value, $valid_fields, true ) ? $country_value : '';
+            // The country-fields panel is only rendered when Country Select
+            // is active (see the "Country fields" checkbox group below), so
+            // a POST without it at all means "panel not shown", not "clear
+            // the selection" — preserve the existing value in that case,
+            // same as the allowed_countries handling above.
+            $posted_country_fields = isset( $posted['country_fields'] ) && is_array( $posted['country_fields'] )
+                ? $posted['country_fields']
+                : ( isset( $existing['country_fields'] )
+                    ? (array) $existing['country_fields']
+                    // A profile saved before multi-field country support.
+                    : ( ! empty( $existing['country_field'] ) ? array( $existing['country_field'] ) : array() ) );
+            $profile['country_fields'] = array_values( array_intersect(
+                array_unique( array_map( 'sanitize_key', $posted_country_fields ) ),
+                $valid_fields
+            ) );
 
             foreach ( array( 'name_max','message_min','message_max' ) as $key ) {
                 $profile[ $key ] = isset( $posted[ $key ] ) ? max( 0, absint( $posted[ $key ] ) ) : 0;
@@ -198,7 +211,8 @@ class OliForge_CF7SG_Settings {
                 if ( isset( $finfo['basetype'] ) && 'select' === $finfo['basetype'] ) { $select_fields[] = $fname; }
             }
             $single_purpose_fields = array_merge(
-                array_filter( array( $profile['email_field'], $profile['country_field'], $profile['consent_field'] ) ),
+                array_filter( array( $profile['email_field'], $profile['consent_field'] ) ),
+                $profile['country_fields'],
                 $select_fields
             );
             $profile['content_fields'] = array();
@@ -304,6 +318,29 @@ class OliForge_CF7SG_Settings {
             '<div class="oliforge-field"><label class="oliforge-field__label" for="%1$s">%2$s</label><input id="%1$s" type="number" min="0" name="%3$s[forms][%4$s][%5$s]" value="%6$s"></div>',
             esc_attr( $id ), esc_html( $label ), esc_attr( self::OPTION ), esc_attr( $form_id ), esc_attr( $name ), esc_attr( isset( $profile[ $name ] ) ? $profile[ $name ] : 0 )
         );
+    }
+
+    /**
+     * Every country_select field on the form, checkbox-selected — a form
+     * can have more than one (e.g. billing/shipping), each resolved and
+     * validated independently against Country Select's own per-tag
+     * allowlist/include/exclude/list:. All are enabled by default via
+     * OliForge_CF7SG_Forms::default_profile().
+     */
+    private function profile_country_fields( $form_id, $profile, $fields ) {
+        $selected = isset( $profile['country_fields'] ) ? (array) $profile['country_fields'] : array();
+        $country_fields = array_filter( $fields, static function ( $field ) { return 'country_select' === $field['basetype']; } );
+        if ( ! $country_fields ) { return; }
+        echo '<div class="oliforge-field oliforge-field--wide">';
+        printf( '<span class="oliforge-field__label">%s</span>', esc_html__( 'Country fields', 'oliforge-cf7-submission-guard' ) );
+        echo '<div class="oliforge-field-options">';
+        foreach ( $country_fields as $field ) {
+            printf(
+                '<label><input type="checkbox" name="%1$s[forms][%2$s][country_fields][]" value="%3$s" %4$s> <code>%3$s</code></label>',
+                esc_attr( self::OPTION ), esc_attr( $form_id ), esc_attr( $field['name'] ), checked( in_array( $field['name'], $selected, true ), true, false )
+            );
+        }
+        echo '</div></div>';
     }
 
     /**
@@ -523,16 +560,19 @@ class OliForge_CF7SG_Settings {
                                 </div>
                                 <div class="oliforge-field-grid">
                                     <?php $this->profile_field_select( $form_id, 'email_field', __( 'Email field', 'oliforge-cf7-submission-guard' ), $profile, $form['fields'] ); ?>
-                                    <?php if ( $country_select_active ) { $this->profile_field_select( $form_id, 'country_field', __( 'Country field', 'oliforge-cf7-submission-guard' ), $profile, $form['fields'] ); } ?>
                                     <?php $this->profile_field_select( $form_id, 'consent_field', __( 'Consent field', 'oliforge-cf7-submission-guard' ), $profile, $form['fields'] ); ?>
                                     <?php $this->profile_field_select( $form_id, 'error_field', __( 'Generic error field', 'oliforge-cf7-submission-guard' ), $profile, $form['fields'], __( 'Used when a matched rule has no field of its own to attach the error to (e.g. rate limiting, too-fast submission).', 'oliforge-cf7-submission-guard' ) ); ?>
                                 </div>
+                                <?php if ( $country_select_active ) { $this->profile_country_fields( $form_id, $profile, $form['fields'] ); } ?>
                                 <?php
                                 $this->profile_content_fields(
                                     $form_id,
                                     $profile,
                                     $form['fields'],
-                                    array_filter( array( $profile['email_field'], $profile['country_field'], $profile['consent_field'] ) )
+                                    array_merge(
+                                        array_filter( array( $profile['email_field'], $profile['consent_field'] ) ),
+                                        $profile['country_fields']
+                                    )
                                 );
                                 ?>
                             </article>
