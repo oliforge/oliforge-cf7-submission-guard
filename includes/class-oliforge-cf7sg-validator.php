@@ -169,16 +169,22 @@ class OliForge_CF7SG_Validator {
         $allowed = $this->lines( $this->settings['allowed_countries'] );
         if ( ! $allowed ) {
             $tag = $this->tag_by_name( $field );
-            // OliForge CF7 Country Select's own [country_select] tag builds
-            // its option list from an internal country database rather than
-            // CF7's pipe-value syntax; the quoted string on that tag (e.g.
-            // "Select a country") is its placeholder text, which CF7 still
-            // parses into $tag->values. Falling back to it here would treat
-            // the placeholder as the only "allowed" country and reject every
-            // real selection, so only trust $tag->values for tags that
-            // actually use CF7's native pipe-value list.
             $basetype = $tag && isset( $tag->basetype ) ? (string) $tag->basetype : '';
-            if ( $tag && 'country_select' !== $basetype && isset( $tag->values ) ) {
+            if (
+                $tag && 'country_select' === $basetype
+                && class_exists( 'OliForge_CF7_Country_Select' )
+                && method_exists( 'OliForge_CF7_Country_Select', 'get_allowed_country_codes' )
+            ) {
+                // Ask the companion plugin for exactly the codes this tag
+                // currently accepts (its admin allowlist, per-tag
+                // include/exclude, and Pro named lists via list:) instead of
+                // guessing from $tag->values, which for this custom tag type
+                // holds the placeholder text ("Select a country"), not a
+                // value list — using it directly would reject every real
+                // selection.
+                $allowed = OliForge_CF7_Country_Select::get_allowed_country_codes( $tag );
+            } elseif ( $tag && 'country_select' !== $basetype && isset( $tag->values ) ) {
+                // A genuine native CF7 [select]/[radio] tag with pipe values.
                 $allowed = array_map( 'strval', (array) $tag->values );
             }
         }
