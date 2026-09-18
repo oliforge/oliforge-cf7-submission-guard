@@ -63,7 +63,7 @@ class OliForge_CF7SG_Logger {
     }
 
     /**
-     * Dashboard summary: blocked/allowed totals for the window, and the
+     * Dashboard summary: blocked/monitored/allowed totals for the window, and the
      * most frequently triggered rules within it.
      */
     public static function stats( $days = 30 ) {
@@ -71,17 +71,18 @@ class OliForge_CF7SG_Logger {
         $table = self::table();
         $since = gmdate( 'Y-m-d H:i:s', time() - ( max( 1, absint( $days ) ) * DAY_IN_SECONDS ) );
 
-        $totals = array( 'blocked' => 0, 'allowed' => 0 );
+        $totals = array( 'blocked' => 0, 'monitored' => 0, 'allowed' => 0 );
         $rows = $wpdb->get_results( $wpdb->prepare( "SELECT result, COUNT(*) AS total FROM {$table} WHERE created_at >= %s GROUP BY result", $since ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         foreach ( (array) $rows as $row ) {
             if ( isset( $totals[ $row->result ] ) ) { $totals[ $row->result ] = (int) $row->total; }
         }
 
-        $by_rule = $wpdb->get_results( $wpdb->prepare( "SELECT rule, COUNT(*) AS total FROM {$table} WHERE created_at >= %s AND result = %s GROUP BY rule ORDER BY total DESC LIMIT 8", $since, 'blocked' ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $by_rule = $wpdb->get_results( $wpdb->prepare( "SELECT rule, COUNT(*) AS total FROM {$table} WHERE created_at >= %s AND result IN (%s, %s) GROUP BY rule ORDER BY total DESC LIMIT 8", $since, 'blocked', 'monitored' ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return array(
             'days'      => absint( $days ),
             'blocked'   => $totals['blocked'],
+            'monitored' => $totals['monitored'],
             'allowed'   => $totals['allowed'],
             'by_rule'   => $by_rule,
         );
