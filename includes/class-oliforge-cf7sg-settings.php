@@ -190,8 +190,17 @@ class OliForge_CF7SG_Settings {
             // Fields already covered by their own dedicated, single-purpose
             // check (email domain, country, consent) never belong in the
             // generic content rules: e.g. "block @ character" would reject
-            // every legitimate email address.
-            $single_purpose_fields = array_filter( array( $profile['email_field'], $profile['country_field'], $profile['consent_field'] ) );
+            // every legitimate email address. select-type fields never
+            // belong there either — their value is always one of a fixed
+            // set of options, checked separately by invalid_select_fields().
+            $select_fields = array();
+            foreach ( $form['fields'] as $fname => $finfo ) {
+                if ( isset( $finfo['basetype'] ) && 'select' === $finfo['basetype'] ) { $select_fields[] = $fname; }
+            }
+            $single_purpose_fields = array_merge(
+                array_filter( array( $profile['email_field'], $profile['country_field'], $profile['consent_field'] ) ),
+                $select_fields
+            );
             $profile['content_fields'] = array();
             foreach ( isset( $posted['content_fields'] ) ? (array) $posted['content_fields'] : array() as $field ) {
                 $field = sanitize_key( $field );
@@ -302,6 +311,10 @@ class OliForge_CF7SG_Settings {
      * single-purpose validation (email domain, country, consent) and so
      * should never be offered here: generic content rules like "block @
      * character" are structurally incompatible with, e.g., an email field.
+     * select-type fields are always excluded too — their value is always
+     * one of a fixed set of options, so pattern-based content rules
+     * (URLs, HTML, forbidden words...) are meaningless for them; they
+     * already have their own dedicated options check.
      */
     private function profile_content_fields( $form_id, $profile, $fields, $exclude = array() ) {
         $selected = isset( $profile['content_fields'] ) ? (array) $profile['content_fields'] : array();
@@ -309,7 +322,7 @@ class OliForge_CF7SG_Settings {
         printf( '<span class="oliforge-field__label">%s</span>', esc_html__( 'Fields checked by content rules', 'oliforge-cf7-submission-guard' ) );
         echo '<div class="oliforge-field-options">';
         foreach ( $fields as $field ) {
-            if ( in_array( $field['name'], $exclude, true ) ) { continue; }
+            if ( in_array( $field['name'], $exclude, true ) || 'select' === $field['basetype'] ) { continue; }
             printf(
                 '<label><input type="checkbox" name="%1$s[forms][%2$s][content_fields][]" value="%3$s" %4$s> <code>%3$s</code> <span>%5$s</span></label>',
                 esc_attr( self::OPTION ), esc_attr( $form_id ), esc_attr( $field['name'] ), checked( in_array( $field['name'], $selected, true ), true, false ), esc_html( $field['type'] )
