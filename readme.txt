@@ -3,7 +3,8 @@ Contributors: oliforge
 Tags: contact form 7, validation, spam, security, rate limit
 Requires at least: 6.2
 Requires PHP: 7.4
-Stable tag: 0.2.0
+Tested up to: 7.1
+Stable tag: 0.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,6 +21,13 @@ OliForge CF7 Submission Guard validates Contact Form 7 submissions before mail i
 3. Open the "Submission Guard" menu in wp-admin, enable protection for the required CF7 forms, map their fields, and configure the shared rules.
 
 == Changelog ==
+
+= 0.2.1 =
+* Validate native CF7 select values, including pipe-mapped and multiple values.
+* Exclude select and dedicated email, country, and consent fields from generic content rules.
+* Use an atomic fixed-window database rate limiter.
+* Separate the plugin version from the database schema version.
+* Refresh translation metadata and release packaging.
 
 = 0.2.0 =
 * Discover saved Contact Form 7 forms and their fields automatically.

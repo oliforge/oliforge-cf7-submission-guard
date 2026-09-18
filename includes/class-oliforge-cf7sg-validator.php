@@ -195,6 +195,26 @@ class OliForge_CF7SG_Validator {
      * basetype === 'select' only, so it never touches country_select
      * (which has its own dedicated, differently-sourced check).
      */
+    private function select_allowed_values( $tag ) {
+        $values = isset( $tag->values ) ? array_map( 'strval', (array) $tag->values ) : array();
+        $allowed = $values;
+
+        // CF7 pipes can render "Label|stored-value" with the value after the
+        // pipe submitted by the browser. Accept both representations so this
+        // structural guard remains compatible across CF7 versions.
+        if ( isset( $tag->pipes ) && is_object( $tag->pipes ) && method_exists( $tag->pipes, 'collect_afters' ) ) {
+            // collect_afters() takes no arguments in CF7 core; it always
+            // returns every pipe's "after" value for this tag.
+            $allowed = array_merge( $allowed, array_map( 'strval', (array) $tag->pipes->collect_afters() ) );
+        }
+        foreach ( isset( $tag->raw_values ) ? (array) $tag->raw_values : array() as $raw_value ) {
+            $parts = explode( '|', (string) $raw_value, 2 );
+            if ( isset( $parts[1] ) ) { $allowed[] = $parts[1]; }
+        }
+
+        return array_values( array_unique( array_map( 'trim', $allowed ) ) );
+    }
+
     private function invalid_select_fields() {
         $form = function_exists( 'wpcf7_get_current_contact_form' ) ? wpcf7_get_current_contact_form() : null;
         if ( ! $form || ! method_exists( $form, 'scan_form_tags' ) ) { return array(); }
@@ -209,7 +229,7 @@ class OliForge_CF7SG_Validator {
                 return trim( sanitize_text_field( (string) $v ) );
             }, $posted ), static function ( $v ) { return '' !== $v; } ) );
             if ( ! $posted ) { continue; }
-            $allowed = array_map( 'strval', (array) $tag->values );
+            $allowed = $this->select_allowed_values( $tag );
             if ( ! $allowed ) { continue; }
             foreach ( $posted as $value ) {
                 if ( ! in_array( $value, $allowed, true ) ) { $invalid[] = $name; break; }

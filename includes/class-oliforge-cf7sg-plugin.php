@@ -55,14 +55,13 @@ final class OliForge_CF7SG_Plugin {
     }
 
     /**
-     * dbDelta() is idempotent, so re-running it whenever OLIFORGE_CF7SG_VERSION moves on
-     * is enough to add new columns for sites that already had the plugin active
-     * (activate() alone only runs once, on first activation).
+     * Plugin releases and database schema changes have independent versions.
      */
     private function maybe_upgrade() {
-        if ( get_option( 'oliforge_cf7sg_db_version' ) === OLIFORGE_CF7SG_VERSION ) { return; }
+        if ( get_option( 'oliforge_cf7sg_db_version' ) === OLIFORGE_CF7SG_DB_VERSION ) { return; }
         OliForge_CF7SG_Logger::install_table();
-        update_option( 'oliforge_cf7sg_db_version', OLIFORGE_CF7SG_VERSION, false );
+        OliForge_CF7SG_Rate_Limiter::install_table();
+        update_option( 'oliforge_cf7sg_db_version', OLIFORGE_CF7SG_DB_VERSION, false );
     }
 
     public function cf7_missing_notice() {
@@ -74,7 +73,8 @@ final class OliForge_CF7SG_Plugin {
 
     public static function activate() {
         OliForge_CF7SG_Logger::install_table();
-        update_option( 'oliforge_cf7sg_db_version', OLIFORGE_CF7SG_VERSION, false );
+        OliForge_CF7SG_Rate_Limiter::install_table();
+        update_option( 'oliforge_cf7sg_db_version', OLIFORGE_CF7SG_DB_VERSION, false );
         if ( ! wp_next_scheduled( 'oliforge_cf7sg_daily_cleanup' ) ) {
             wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', 'oliforge_cf7sg_daily_cleanup' );
         }
