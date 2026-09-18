@@ -83,7 +83,15 @@ class OliForge_CF7SG_Validator {
         foreach ( array( 'name_field', 'message_field', 'email_field', 'country_field', 'consent_field', 'error_field' ) as $key ) {
             if ( empty( $profile[ $key ] ) || ! in_array( $profile[ $key ], $valid_fields, true ) ) { $profile[ $key ] = ''; }
         }
-        $profile['content_fields'] = array_values( array_intersect( isset( $profile['content_fields'] ) ? (array) $profile['content_fields'] : array(), $valid_fields ) );
+        // Belt-and-suspenders against stale saved data: a field with its own
+        // dedicated check (email domain, country, consent) must never also
+        // run through the generic content rules, e.g. "block @ character"
+        // would reject every legitimate email address.
+        $single_purpose_fields = array_filter( array( $profile['email_field'], $profile['country_field'], $profile['consent_field'] ) );
+        $profile['content_fields'] = array_values( array_diff(
+            array_intersect( isset( $profile['content_fields'] ) ? (array) $profile['content_fields'] : array(), $valid_fields ),
+            $single_purpose_fields
+        ) );
         return $profile;
     }
 
