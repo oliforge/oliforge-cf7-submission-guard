@@ -477,9 +477,11 @@ class OliForge_CF7SG_Settings {
                                     <div><h2><?php echo esc_html( $form['title'] ); ?></h2><p><code>ID <?php echo esc_html( $form_id ); ?></code><?php if ( $form['locale'] ) : ?> · <?php echo esc_html( $form['locale'] ); ?><?php endif; ?></p></div>
                                     <label class="oliforge-toggle"><input class="oliforge-toggle__input" type="checkbox" name="<?php echo esc_attr( self::OPTION ); ?>[forms][<?php echo esc_attr( $form_id ); ?>][enabled]" value="1" <?php checked( ! empty( $profile['enabled'] ) ); ?>><span class="oliforge-toggle__track"><span class="oliforge-toggle__thumb"></span></span><span class="oliforge-toggle__label"><?php esc_html_e( 'Protect this form', 'oliforge-cf7-submission-guard' ); ?></span></label>
                                 </header>
-                                <div class="oliforge-field-grid">
+                                <div class="oliforge-field-row">
                                     <?php $this->profile_field_select( $form_id, 'name_field', __( 'Name field', 'oliforge-cf7-submission-guard' ), $profile, $form['fields'] ); ?>
                                     <?php $this->profile_number_field( $form_id, 'name_max', __( 'Maximum name length', 'oliforge-cf7-submission-guard' ), $profile ); ?>
+                                </div>
+                                <div class="oliforge-field-grid">
                                     <?php $this->profile_field_select( $form_id, 'message_field', __( 'Message field', 'oliforge-cf7-submission-guard' ), $profile, $form['fields'] ); ?>
                                     <?php $this->profile_number_field( $form_id, 'message_min', __( 'Minimum message length', 'oliforge-cf7-submission-guard' ), $profile ); ?>
                                     <?php $this->profile_number_field( $form_id, 'message_max', __( 'Maximum message length (0 = disabled)', 'oliforge-cf7-submission-guard' ), $profile ); ?>
