@@ -15,11 +15,11 @@ class OliForge_CF7SG_Settings {
         return array(
             'enabled'                 => 1,
             'mode'                    => 'enforce',
+            'name_field'              => 'name',
+            'name_max'                => 20,
             'message_field'           => 'message',
-            'length_rules'            => array(
-                array( 'field' => 'name', 'min' => 0, 'max' => 20 ),
-                array( 'field' => 'message', 'min' => 30, 'max' => 0 ),
-            ),
+            'message_min'             => 30,
+            'message_max'             => 0,
             'email_field'             => 'email',
             'country_field'           => 'select_country',
             'consent_field'           => '',
@@ -47,8 +47,9 @@ class OliForge_CF7SG_Settings {
             'ip_storage'              => 'anonymized',
             'retention_days'          => 30,
             'error_field'             => 'name',
-            'msg_min_length'          => 'This field is too short.',
-            'msg_max_length'          => 'This field is too long.',
+            'msg_name_max'            => 'Name is too long.',
+            'msg_message_min'         => 'Message is too short.',
+            'msg_message_max'         => 'Message is too long.',
             'msg_url'                 => 'Links are not allowed in this field.',
             'msg_at'                  => 'The @ character is not allowed in this field.',
             'msg_email_pattern'       => 'Email addresses are not allowed in this field.',
@@ -65,31 +66,7 @@ class OliForge_CF7SG_Settings {
     }
 
     public static function get() {
-        $stored = get_option( self::OPTION, array() );
-        if ( is_array( $stored ) && ! isset( $stored['length_rules'] ) && ( ! empty( $stored['name_max'] ) || ! empty( $stored['message_min'] ) || ! empty( $stored['message_max'] ) ) ) {
-            $stored['length_rules'] = self::migrate_length_rules( $stored );
-        }
-        return wp_parse_args( $stored, self::defaults() );
-    }
-
-    /**
-     * Reconstructs length_rules from the pre-0.1.2 fixed name_max/message_min/
-     * message_max keys, so upgrading sites keep their configured limits instead
-     * of silently reverting to the new defaults.
-     */
-    private static function migrate_length_rules( $stored ) {
-        $rules = array();
-        if ( ! empty( $stored['name_max'] ) && ! empty( $stored['name_field'] ) ) {
-            $rules[] = array( 'field' => sanitize_key( $stored['name_field'] ), 'min' => 0, 'max' => absint( $stored['name_max'] ) );
-        }
-        if ( ( ! empty( $stored['message_min'] ) || ! empty( $stored['message_max'] ) ) && ! empty( $stored['message_field'] ) ) {
-            $rules[] = array(
-                'field' => sanitize_key( $stored['message_field'] ),
-                'min'   => isset( $stored['message_min'] ) ? absint( $stored['message_min'] ) : 0,
-                'max'   => isset( $stored['message_max'] ) ? absint( $stored['message_max'] ) : 0,
-            );
-        }
-        return $rules;
+        return wp_parse_args( get_option( self::OPTION, array() ), self::defaults() );
     }
 
     public function menu() {
@@ -160,25 +137,12 @@ class OliForge_CF7SG_Settings {
         $out['mode'] = isset( $input['mode'] ) && in_array( $input['mode'], array( 'enforce', 'monitor' ), true ) ? $input['mode'] : 'enforce';
         $out['ip_storage'] = isset( $input['ip_storage'] ) && in_array( $input['ip_storage'], array( 'anonymized', 'full', 'none' ), true ) ? $input['ip_storage'] : 'anonymized';
 
-        foreach ( array( 'message_field','email_field','consent_field','error_field' ) as $key ) {
+        foreach ( array( 'name_field','message_field','email_field','consent_field','error_field' ) as $key ) {
             $out[ $key ] = isset( $input[ $key ] ) ? sanitize_key( $input[ $key ] ) : '';
         }
         $out['country_field'] = isset( $input['country_field'] ) ? sanitize_key( $input['country_field'] ) : $current['country_field'];
-        foreach ( array( 'rate_limit_count','rate_limit_minutes','min_time_seconds','duplicate_minutes','retention_days','max_digits_percent','max_uppercase_percent' ) as $key ) {
+        foreach ( array( 'name_max','message_min','message_max','rate_limit_count','rate_limit_minutes','min_time_seconds','duplicate_minutes','retention_days','max_digits_percent','max_uppercase_percent' ) as $key ) {
             $out[ $key ] = isset( $input[ $key ] ) ? max( 0, absint( $input[ $key ] ) ) : 0;
-        }
-
-        $out['length_rules'] = array();
-        if ( isset( $input['length_rules'] ) && is_array( $input['length_rules'] ) ) {
-            foreach ( $input['length_rules'] as $rule ) {
-                $field = isset( $rule['field'] ) ? sanitize_key( $rule['field'] ) : '';
-                if ( '' === $field ) { continue; }
-                $out['length_rules'][] = array(
-                    'field' => $field,
-                    'min'   => isset( $rule['min'] ) ? max( 0, absint( $rule['min'] ) ) : 0,
-                    'max'   => isset( $rule['max'] ) ? max( 0, absint( $rule['max'] ) ) : 0,
-                );
-            }
         }
         foreach ( array( 'content_fields','forbidden_words','blocked_domains' ) as $key ) {
             $out[ $key ] = isset( $input[ $key ] ) ? $this->clean_multiline( sanitize_textarea_field( wp_unslash( $input[ $key ] ) ) ) : '';
@@ -258,29 +222,6 @@ class OliForge_CF7SG_Settings {
             printf( '<p class="oliforge-field__hint">%s</p>', esc_html( $hint ) );
         }
         echo '</div>';
-    }
-
-    /**
-     * One row of the "Field length rules" repeater. $index is either the
-     * numeric array key of a stored rule, or the literal string "__INDEX__"
-     * for the hidden <template> row that JS clones and re-indexes on "Add".
-     */
-    private function length_rule_row( $index, $rule ) {
-        printf(
-            '<tr class="oliforge-repeater__row">' .
-                '<td><input type="text" class="regular-text" name="%1$s[length_rules][%2$s][field]" value="%3$s" placeholder="%4$s"></td>' .
-                '<td><input type="number" min="0" name="%1$s[length_rules][%2$s][min]" value="%5$s"></td>' .
-                '<td><input type="number" min="0" name="%1$s[length_rules][%2$s][max]" value="%6$s"></td>' .
-                '<td><button type="button" class="button oliforge-repeater__remove">%7$s</button></td>' .
-            '</tr>',
-            esc_attr( self::OPTION ),
-            esc_attr( $index ),
-            esc_attr( isset( $rule['field'] ) ? $rule['field'] : '' ),
-            esc_attr__( 'e.g. phone', 'oliforge-cf7-submission-guard' ),
-            esc_attr( isset( $rule['min'] ) ? $rule['min'] : 0 ),
-            esc_attr( isset( $rule['max'] ) ? $rule['max'] : 0 ),
-            esc_html__( 'Remove', 'oliforge-cf7-submission-guard' )
-        );
     }
 
     /**
@@ -449,7 +390,13 @@ class OliForge_CF7SG_Settings {
 
                     <section class="oliforge-panel" id="oliforge-cf7sg-panel-fields" data-oliforge-cf7sg-panel="fields">
                         <div class="oliforge-field-row">
-                            <?php $this->text_field( 'message_field', __( 'Message field', 'oliforge-cf7-submission-guard' ), $s, __( 'Used to detect duplicate submissions.', 'oliforge-cf7-submission-guard' ) ); ?>
+                            <?php $this->text_field( 'name_field', __( 'Name field', 'oliforge-cf7-submission-guard' ), $s ); ?>
+                            <?php $this->text_field( 'name_max', __( 'Maximum name length', 'oliforge-cf7-submission-guard' ), $s, '', 'number', 0 ); ?>
+                        </div>
+                        <div class="oliforge-field-row">
+                            <?php $this->text_field( 'message_field', __( 'Message field', 'oliforge-cf7-submission-guard' ), $s ); ?>
+                            <?php $this->text_field( 'message_min', __( 'Minimum message length', 'oliforge-cf7-submission-guard' ), $s, '', 'number', 0 ); ?>
+                            <?php $this->text_field( 'message_max', __( 'Maximum message length (0 = disabled)', 'oliforge-cf7-submission-guard' ), $s, '', 'number', 0 ); ?>
                         </div>
                         <div class="oliforge-field-row">
                             <?php $this->text_field( 'email_field', __( 'Email field', 'oliforge-cf7-submission-guard' ), $s ); ?>
@@ -459,31 +406,6 @@ class OliForge_CF7SG_Settings {
                                 <?php $this->text_field( 'country_field', __( 'Country field', 'oliforge-cf7-submission-guard' ), $s ); ?>
                             </div>
                         <?php endif; ?>
-
-                        <hr class="oliforge-divider">
-                        <div class="oliforge-field">
-                            <span class="oliforge-field__label"><?php esc_html_e( 'Field length rules', 'oliforge-cf7-submission-guard' ); ?></span>
-                            <p class="oliforge-field__hint"><?php esc_html_e( 'Add any CF7 field name to enforce a minimum and/or maximum character length (0 = no limit).', 'oliforge-cf7-submission-guard' ); ?></p>
-                        </div>
-                        <table class="oliforge-repeater" data-oliforge-repeater="length_rules">
-                            <thead>
-                                <tr>
-                                    <th><?php esc_html_e( 'Field name', 'oliforge-cf7-submission-guard' ); ?></th>
-                                    <th><?php esc_html_e( 'Min length', 'oliforge-cf7-submission-guard' ); ?></th>
-                                    <th><?php esc_html_e( 'Max length', 'oliforge-cf7-submission-guard' ); ?></th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody data-oliforge-repeater-rows>
-                                <?php foreach ( (array) $s['length_rules'] as $i => $rule ) : ?>
-                                    <?php $this->length_rule_row( $i, $rule ); ?>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                        <button type="button" class="button oliforge-repeater__add" data-oliforge-repeater-add="length_rules"><?php esc_html_e( '+ Add field', 'oliforge-cf7-submission-guard' ); ?></button>
-                        <template data-oliforge-repeater-template="length_rules">
-                            <?php $this->length_rule_row( '__INDEX__', array( 'field' => '', 'min' => 0, 'max' => 0 ) ); ?>
-                        </template>
                     </section>
 
                     <section class="oliforge-panel" id="oliforge-cf7sg-panel-content" data-oliforge-cf7sg-panel="content">
@@ -557,8 +479,9 @@ class OliForge_CF7SG_Settings {
                         <div class="oliforge-field-grid">
                         <?php
                         $labels = array(
-                            'msg_min_length'    => __( 'Field too short', 'oliforge-cf7-submission-guard' ),
-                            'msg_max_length'    => __( 'Field too long', 'oliforge-cf7-submission-guard' ),
+                            'msg_name_max'      => __( 'Name too long', 'oliforge-cf7-submission-guard' ),
+                            'msg_message_min'   => __( 'Message too short', 'oliforge-cf7-submission-guard' ),
+                            'msg_message_max'   => __( 'Message too long', 'oliforge-cf7-submission-guard' ),
                             'msg_url'           => __( 'URL detected', 'oliforge-cf7-submission-guard' ),
                             'msg_at'            => __( '@ detected', 'oliforge-cf7-submission-guard' ),
                             'msg_email_pattern' => __( 'Email pattern detected', 'oliforge-cf7-submission-guard' ),
@@ -616,38 +539,6 @@ class OliForge_CF7SG_Settings {
                 try { initial = window.localStorage.getItem( storageKey ); } catch ( e ) {}
             }
             activate( initial );
-        } )();
-
-        ( function() {
-            Array.prototype.slice.call( document.querySelectorAll( '[data-oliforge-repeater]' ) ).forEach( function( table ) {
-                var key = table.getAttribute( 'data-oliforge-repeater' );
-                var tbody = table.querySelector( '[data-oliforge-repeater-rows]' );
-                var addBtn = document.querySelector( '[data-oliforge-repeater-add="' + key + '"]' );
-                var template = document.querySelector( 'template[data-oliforge-repeater-template="' + key + '"]' );
-                if ( ! tbody || ! addBtn || ! template ) { return; }
-                var counter = tbody.children.length;
-
-                function bindRemove( row ) {
-                    var btn = row.querySelector( '.oliforge-repeater__remove' );
-                    if ( btn ) {
-                        btn.addEventListener( 'click', function() { row.remove(); } );
-                    }
-                }
-
-                Array.prototype.slice.call( tbody.children ).forEach( bindRemove );
-
-                addBtn.addEventListener( 'click', function() {
-                    var frag = template.content.cloneNode( true );
-                    var row = frag.querySelector( 'tr' );
-                    Array.prototype.slice.call( row.querySelectorAll( '[name]' ) ).forEach( function( input ) {
-                        input.name = input.name.replace( '__INDEX__', String( counter ) );
-                    } );
-                    counter++;
-                    tbody.appendChild( frag );
-                    bindRemove( tbody.lastElementChild );
-                    tbody.lastElementChild.querySelector( 'input' ).focus();
-                } );
-            } );
         } )();
         </script>
         <?php
