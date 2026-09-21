@@ -217,7 +217,10 @@ class OliForge_CF7SG_Settings {
             $profile['content_fields'] = array_values( array_unique( $profile['content_fields'] ) );
             $out['forms'][ $form_id ] = $profile;
         }
-        return $out;
+
+        // Extension point for add-ons (e.g. the Pro plugin) to sanitize and
+        // persist their own keys inside this same settings array.
+        return apply_filters( 'oliforge_cf7sg_sanitize_settings', $out, $input, $current );
     }
 
     private function toggle( $name, $label, $s, $hint = '' ) {
@@ -567,6 +570,15 @@ class OliForge_CF7SG_Settings {
 
                     <section class="oliforge-panel" id="oliforge-cf7sg-panel-domains" data-oliforge-cf7sg-panel="domains">
                         <?php $this->textarea_field( 'blocked_domains', __( 'Blocked domains', 'oliforge-cf7-submission-guard' ), $s, __( 'One per line. Subdomains are blocked too.', 'oliforge-cf7-submission-guard' ), 10 ); ?>
+                        <?php
+                        /**
+                         * Extension point for add-ons (e.g. the Pro plugin) that add
+                         * their own email-domain checks — an allowlist, an
+                         * auto-updated disposable-domain list, an MX/DNS lookup —
+                         * rendered right below the core blocklist field.
+                         */
+                        do_action( 'oliforge_cf7sg_domains_panel', $s );
+                        ?>
                     </section>
 
                     <?php if ( $show_country_tab && $country_select_active ) : ?>

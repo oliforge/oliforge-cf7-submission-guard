@@ -359,7 +359,24 @@ class OliForge_CF7SG_Validator {
         }
 
         $email = $this->raw( $p['email_field'] );
-        if ( $p['email_field'] && $email && $this->blocked_domain( $email ) ) { $this->add_event( 'blocked_domain', $p['email_field'], $s['msg_domain'] ); }
+        if ( $p['email_field'] && $email ) {
+            if ( $this->blocked_domain( $email ) ) {
+                $this->add_event( 'blocked_domain', $p['email_field'], $s['msg_domain'] );
+            } else {
+                /**
+                 * Extension point for add-ons (e.g. the Pro plugin) that add
+                 * their own email-domain checks beyond the core blocklist —
+                 * an allowlist, a disposable-domain list, an MX/DNS lookup.
+                 * Return array('rule' => slug, 'message' => text) to block
+                 * the submission, or leave $result as-is (null) to allow it.
+                 */
+                $domain_check = apply_filters( 'oliforge_cf7sg_domain_check', null, $this->email_domain( $email ), $email, $s );
+                if ( is_array( $domain_check ) && ! empty( $domain_check['rule'] ) ) {
+                    $message = ! empty( $domain_check['message'] ) ? $domain_check['message'] : $s['msg_domain'];
+                    $this->add_event( sanitize_key( $domain_check['rule'] ), $p['email_field'], $message );
+                }
+            }
+        }
 
         if ( OliForge_CF7SG_Plugin::country_select_is_active() ) {
             // A form can have more than one country field (e.g. billing vs.

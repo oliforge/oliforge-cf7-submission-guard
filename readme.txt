@@ -4,7 +4,7 @@ Tags: contact form 7, validation, spam, security, rate limit
 Requires at least: 6.2
 Requires PHP: 7.4
 Tested up to: 7.1
-Stable tag: 0.2.5
+Stable tag: 0.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,11 @@ OliForge CF7 Submission Guard validates Contact Form 7 submissions before mail i
 3. Open the "Submission Guard" menu in wp-admin, enable protection for the required CF7 forms, map their fields, and configure the shared rules.
 
 == Changelog ==
+
+= 0.3.0 =
+* Admin settings UX: widened the "Field" column in the Logs table, gave the "Fields checked by content rules" block a proper section heading, and fixed the "Settings saved." notice never appearing after save (auto-dismisses after 5 seconds now).
+* Every `country_select` field on a form is now validated automatically — replaced the manual per-form "Country fields" checkbox toggle with auto-detection, and fixed `country_select` fields slipping into the generic "Fields checked by content rules" list (only plain `select` was excluded before).
+* Added extension points for add-ons (e.g. OliForge CF7 Submission Guard Pro): `oliforge_cf7sg_domains_panel` action to render extra UI in the Domains tab, `oliforge_cf7sg_sanitize_settings` filter to persist extra settings keys, and `oliforge_cf7sg_domain_check` filter to add extra email-domain checks beyond the core blocklist.
 
 = 0.2.5 =
 * Moved textdomain loading from plugins_loaded to init: since WordPress 6.7, loading a plugin's textdomain before the init hook can trigger a "_load_textdomain_just_in_time was called incorrectly" notice. The plugin still ships and loads its own bundled translations (it isn't distributed through WordPress.org language packs), so load_plugin_textdomain() itself stays — only its timing changed.
