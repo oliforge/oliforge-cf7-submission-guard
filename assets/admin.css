@@ -367,6 +367,13 @@
     color:var(--oli-ink)
 }
 
+.oliforge-section-title {
+    margin:0 0 12px;
+    font-size:15px;
+    font-weight:700;
+    color:var(--oli-ink)
+}
+
 .oliforge-field__hint {
     color:var(--oli-muted);
     font-size:12.5px;
@@ -586,7 +593,7 @@
 .oliforge-log-table--full th:nth-child(2),.oliforge-log-table--full td:nth-child(2){width:80px}
 .oliforge-log-table--full th:nth-child(3),.oliforge-log-table--full td:nth-child(3){width:80px}
 .oliforge-log-table--full th:nth-child(4),.oliforge-log-table--full td:nth-child(4){width:120px}
-.oliforge-log-table--full th:nth-child(5),.oliforge-log-table--full td:nth-child(5){width:80px}
+.oliforge-log-table--full th:nth-child(5),.oliforge-log-table--full td:nth-child(5){width:160px}
 .oliforge-log-table--full th:nth-child(6),.oliforge-log-table--full td:nth-child(6){width:210px}
 .oliforge-log-table--full th:nth-child(7),.oliforge-log-table--full td:nth-child(7){width:200px}
 

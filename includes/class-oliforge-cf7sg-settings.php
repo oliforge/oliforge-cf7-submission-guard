@@ -122,6 +122,7 @@ class OliForge_CF7SG_Settings {
             return;
         }
         wp_enqueue_style( 'oliforge-cf7sg-admin', OLIFORGE_CF7SG_URL . 'assets/admin.css', array(), OLIFORGE_CF7SG_VERSION );
+        wp_enqueue_script( 'oliforge-cf7sg-admin', OLIFORGE_CF7SG_URL . 'assets/admin.js', array(), OLIFORGE_CF7SG_VERSION, true );
     }
 
     private function clean_multiline( $value ) {
@@ -180,27 +181,12 @@ class OliForge_CF7SG_Settings {
                 $value = isset( $posted[ $key ] ) ? sanitize_key( $posted[ $key ] ) : '';
                 $profile[ $key ] = in_array( $value, $valid_fields, true ) ? $value : '';
             }
-            // Unchecked checkboxes submit nothing, so an absent
-            // "country_fields" key is ambiguous between "the panel wasn't
-            // rendered at all" (Country Select inactive, or the form has no
-            // country_select fields — preserve the existing value) and "the
-            // admin unchecked every box" (genuinely clear it). The
-            // country_fields_present marker (see profile_country_fields())
-            // disambiguates: present only when the panel itself was shown.
-            if ( isset( $posted['country_fields'] ) && is_array( $posted['country_fields'] ) ) {
-                $posted_country_fields = $posted['country_fields'];
-            } elseif ( isset( $posted['country_fields_present'] ) ) {
-                $posted_country_fields = array();
-            } elseif ( isset( $existing['country_fields'] ) ) {
-                $posted_country_fields = (array) $existing['country_fields'];
-            } else {
-                // A profile saved before multi-field country support.
-                $posted_country_fields = ! empty( $existing['country_field'] ) ? array( $existing['country_field'] ) : array();
+            // Every country_select field on the form is validated
+            // automatically — there is no per-field opt-out toggle.
+            $profile['country_fields'] = array();
+            foreach ( $form['fields'] as $fname => $finfo ) {
+                if ( isset( $finfo['basetype'] ) && 'country_select' === $finfo['basetype'] ) { $profile['country_fields'][] = $fname; }
             }
-            $profile['country_fields'] = array_values( array_intersect(
-                array_unique( array_map( 'sanitize_key', $posted_country_fields ) ),
-                $valid_fields
-            ) );
 
             foreach ( array( 'name_max','message_min','message_max' ) as $key ) {
                 $profile[ $key ] = isset( $posted[ $key ] ) ? max( 0, absint( $posted[ $key ] ) ) : 0;
@@ -214,7 +200,7 @@ class OliForge_CF7SG_Settings {
             // set of options, checked separately by invalid_select_fields().
             $select_fields = array();
             foreach ( $form['fields'] as $fname => $finfo ) {
-                if ( isset( $finfo['basetype'] ) && 'select' === $finfo['basetype'] ) { $select_fields[] = $fname; }
+                if ( isset( $finfo['basetype'] ) && in_array( $finfo['basetype'], array( 'select', 'country_select' ), true ) ) { $select_fields[] = $fname; }
             }
             $single_purpose_fields = array_merge(
                 array_filter( array( $profile['email_field'], $profile['consent_field'] ) ),
@@ -327,35 +313,6 @@ class OliForge_CF7SG_Settings {
     }
 
     /**
-     * Every country_select field on the form, checkbox-selected — a form
-     * can have more than one (e.g. billing/shipping), each resolved and
-     * validated independently against Country Select's own per-tag
-     * allowlist/include/exclude/list:. All are enabled by default via
-     * OliForge_CF7SG_Forms::default_profile().
-     */
-    private function profile_country_fields( $form_id, $profile, $fields ) {
-        $selected = isset( $profile['country_fields'] ) ? (array) $profile['country_fields'] : array();
-        $country_fields = array_filter( $fields, static function ( $field ) { return 'country_select' === $field['basetype']; } );
-        if ( ! $country_fields ) { return; }
-        echo '<div class="oliforge-field oliforge-field--wide">';
-        printf( '<span class="oliforge-field__label">%s</span>', esc_html__( 'Country fields', 'oliforge-cf7-submission-guard' ) );
-        // Unchecked checkboxes submit nothing at all, so "country_fields"
-        // missing from $_POST is ambiguous between "this panel wasn't
-        // rendered" (preserve the stored value) and "every box was
-        // unchecked" (the admin wants to clear it) — this hidden marker,
-        // present whenever the panel is, disambiguates the two in sanitize().
-        printf( '<input type="hidden" name="%1$s[forms][%2$s][country_fields_present]" value="1">', esc_attr( self::OPTION ), esc_attr( $form_id ) );
-        echo '<div class="oliforge-field-options">';
-        foreach ( $country_fields as $field ) {
-            printf(
-                '<label><input type="checkbox" name="%1$s[forms][%2$s][country_fields][]" value="%3$s" %4$s> <code>%3$s</code></label>',
-                esc_attr( self::OPTION ), esc_attr( $form_id ), esc_attr( $field['name'] ), checked( in_array( $field['name'], $selected, true ), true, false )
-            );
-        }
-        echo '</div></div>';
-    }
-
-    /**
      * $exclude are field names that already have their own dedicated,
      * single-purpose validation (email domain, country, consent) and so
      * should never be offered here: generic content rules like "block @
@@ -367,11 +324,12 @@ class OliForge_CF7SG_Settings {
      */
     private function profile_content_fields( $form_id, $profile, $fields, $exclude = array() ) {
         $selected = isset( $profile['content_fields'] ) ? (array) $profile['content_fields'] : array();
+        echo '<hr class="oliforge-divider">';
         echo '<div class="oliforge-field oliforge-field--wide">';
-        printf( '<span class="oliforge-field__label">%s</span>', esc_html__( 'Fields checked by content rules', 'oliforge-cf7-submission-guard' ) );
+        printf( '<h3 class="oliforge-section-title">%s</h3>', esc_html__( 'Fields checked by content rules', 'oliforge-cf7-submission-guard' ) );
         echo '<div class="oliforge-field-options">';
         foreach ( $fields as $field ) {
-            if ( in_array( $field['name'], $exclude, true ) || 'select' === $field['basetype'] ) { continue; }
+            if ( in_array( $field['name'], $exclude, true ) || in_array( $field['basetype'], array( 'select', 'country_select' ), true ) ) { continue; }
             printf(
                 '<label><input type="checkbox" name="%1$s[forms][%2$s][content_fields][]" value="%3$s" %4$s> <code>%3$s</code> <span>%5$s</span></label>',
                 esc_attr( self::OPTION ), esc_attr( $form_id ), esc_attr( $field['name'] ), checked( in_array( $field['name'], $selected, true ), true, false ), esc_html( $field['type'] )
@@ -533,6 +491,7 @@ class OliForge_CF7SG_Settings {
             <?php
             $this->render_brand_header( __( 'Settings', 'oliforge-cf7-submission-guard' ) );
             $this->render_nav_tabs( 'settings' );
+            settings_errors();
             ?>
             <p class="oliforge-lede"><?php esc_html_e( 'Server-side submission rules for Contact Form 7. Field names must match the CF7 form-tag names.', 'oliforge-cf7-submission-guard' ); ?></p>
 
@@ -575,7 +534,6 @@ class OliForge_CF7SG_Settings {
                                     <?php $this->profile_field_select( $form_id, 'consent_field', __( 'Consent field', 'oliforge-cf7-submission-guard' ), $profile, $form['fields'] ); ?>
                                     <?php $this->profile_field_select( $form_id, 'error_field', __( 'Generic error field', 'oliforge-cf7-submission-guard' ), $profile, $form['fields'], __( 'Used when a matched rule has no field of its own to attach the error to (e.g. rate limiting, too-fast submission).', 'oliforge-cf7-submission-guard' ) ); ?>
                                 </div>
-                                <?php if ( $country_select_active ) { $this->profile_country_fields( $form_id, $profile, $form['fields'] ); } ?>
                                 <?php
                                 $this->profile_content_fields(
                                     $form_id,
