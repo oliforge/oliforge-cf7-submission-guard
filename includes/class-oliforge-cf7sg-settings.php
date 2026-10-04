@@ -759,7 +759,7 @@ class OliForge_CF7SG_Settings {
                     <?php else : foreach ( $rows as $row ) : ?>
                         <tr>
                             <td><?php echo esc_html( $row->created_at ); ?></td>
-                            <td><?php echo esc_html( $row->form_id ); ?></td>
+                            <td title="<?php echo esc_attr( $row->form_id ); ?>"><?php echo esc_html( OliForge_CF7SG_Logger::form_label( $row->form_id ) ); ?></td>
                             <td><span class="oliforge-result-badge oliforge-result-badge--<?php echo esc_attr( $row->result ); ?>"><?php echo esc_html( $row->result ); ?></span></td>
                             <td><code><?php echo esc_html( $row->rule ); ?></code></td>
                             <td><?php echo esc_html( $row->field_name ); ?></td>

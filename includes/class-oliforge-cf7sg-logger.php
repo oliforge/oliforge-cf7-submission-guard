@@ -62,6 +62,37 @@ class OliForge_CF7SG_Logger {
         return $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table} ORDER BY id DESC LIMIT %d", $limit ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
     }
 
+    /**
+     * Human-readable form name for a logged form id. The log stores CF7's
+     * 7-char form hash prefix (or a numeric post ID); resolve either to the form
+     * title, falling back to the raw value if the form no longer exists.
+     */
+    public static function form_label( $form_id ) {
+        static $cache = array();
+        $form_id = (string) $form_id;
+        if ( '' === $form_id ) { return ''; }
+        if ( isset( $cache[ $form_id ] ) ) { return $cache[ $form_id ]; }
+        $post_id = 0;
+        if ( ctype_digit( $form_id ) ) {
+            $post_id = (int) $form_id;
+        } else {
+            $found = get_posts( array(
+                'post_type'      => 'wpcf7_contact_form',
+                'post_status'    => 'any',
+                'meta_key'       => '_hash', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+                'meta_value'     => $form_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+                // The log keeps only the first 7 chars of CF7's full hash.
+                'meta_compare'   => 'LIKE',
+                'posts_per_page' => 1,
+                'fields'         => 'ids',
+            ) );
+            $post_id = $found ? (int) $found[0] : 0;
+        }
+        $title = $post_id ? get_the_title( $post_id ) : '';
+        $cache[ $form_id ] = '' !== $title ? $title : $form_id;
+        return $cache[ $form_id ];
+    }
+
     public static function count() {
         global $wpdb;
         $table = self::table();
