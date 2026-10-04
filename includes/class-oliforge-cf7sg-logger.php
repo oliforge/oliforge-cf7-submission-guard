@@ -62,6 +62,20 @@ class OliForge_CF7SG_Logger {
         return $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table} ORDER BY id DESC LIMIT %d", $limit ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
     }
 
+    public static function count() {
+        global $wpdb;
+        $table = self::table();
+        return (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+    }
+
+    public static function page( $paged = 1, $per_page = 30 ) {
+        global $wpdb;
+        $per_page = max( 1, min( 200, absint( $per_page ) ) );
+        $offset = ( max( 1, absint( $paged ) ) - 1 ) * $per_page;
+        $table = self::table();
+        return $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table} ORDER BY id DESC LIMIT %d OFFSET %d", $per_page, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+    }
+
     /**
      * Dashboard summary: blocked/monitored/allowed totals for the window, and the
      * most frequently triggered rules within it.

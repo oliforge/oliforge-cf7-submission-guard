@@ -701,7 +701,11 @@ class OliForge_CF7SG_Settings {
 
     public function render_logs() {
         if ( ! current_user_can( 'manage_options' ) ) { return; }
-        $rows = OliForge_CF7SG_Logger::recent( 200 );
+        $per_page = 30;
+        $total = OliForge_CF7SG_Logger::count();
+        $total_pages = max( 1, (int) ceil( $total / $per_page ) );
+        $paged = isset( $_GET['paged'] ) ? min( $total_pages, max( 1, absint( $_GET['paged'] ) ) ) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $rows = OliForge_CF7SG_Logger::page( $paged, $per_page );
         // Add-ons can register extra views (e.g. the Pro "Passed" journal).
         $views = (array) apply_filters( 'oliforge_cf7sg_logs_views', array() );
         $view = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( $_GET['view'] ) ) : 'all'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -727,7 +731,7 @@ class OliForge_CF7SG_Settings {
                 return;
             }
             ?>
-            <p class="oliforge-lede"><?php esc_html_e( 'Latest 200 events. Name and message contents are never stored; the email address itself is never stored either, only its domain.', 'oliforge-cf7-submission-guard' ); ?></p>
+            <p class="oliforge-lede"><?php esc_html_e( 'Name and message contents are never stored; the email address itself is never stored either, only its domain.', 'oliforge-cf7-submission-guard' ); ?></p>
 
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" onsubmit="return confirm('Clear all Submission Guard logs?');">
                 <input type="hidden" name="action" value="oliforge_cf7sg_clear_logs">
@@ -770,6 +774,18 @@ class OliForge_CF7SG_Settings {
                     </tbody>
                 </table>
             </div>
+            <?php
+            $links = paginate_links( array(
+                'base'      => add_query_arg( 'paged', '%#%', admin_url( 'admin.php?page=oliforge-cf7-submission-guard-logs' ) ),
+                'format'    => '',
+                'current'   => $paged,
+                'total'     => $total_pages,
+                'prev_text' => '&laquo;',
+                'next_text' => '&raquo;',
+            ) );
+            if ( $links ) : ?>
+                <div class="tablenav"><div class="tablenav-pages"><span class="displaying-num"><?php echo esc_html( sprintf( /* translators: %s: number of log entries */ _n( '%s item', '%s items', $total, 'oliforge-cf7-submission-guard' ), number_format_i18n( $total ) ) ); ?></span> <?php echo wp_kses_post( $links ); ?></div></div>
+            <?php endif; ?>
         </div>
         <?php
     }
