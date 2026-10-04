@@ -4,7 +4,7 @@ Tags: contact form 7, validation, spam, security, rate limit
 Requires at least: 6.2
 Requires PHP: 7.4
 Tested up to: 7.1
-Stable tag: 0.3.0
+Stable tag: 0.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,14 @@ OliForge CF7 Submission Guard validates Contact Form 7 submissions before mail i
 3. Open the "Submission Guard" menu in wp-admin, enable protection for the required CF7 forms, map their fields, and configure the shared rules.
 
 == Changelog ==
+
+= 0.4.0 =
+* Added extension hooks for optional log views and successful-submission processing used by compatible add-ons.
+* Added a logging-panel extension point for add-on settings.
+* Added paginated log views and human-readable Contact Form 7 form labels.
+* Improved cache busting for edited admin CSS and JavaScript assets.
+* Added a reliable fallback for the settings-saved admin notice.
+* "Clear all logs" now removes only blocked/monitored entries; passed entries are kept.
 
 = 0.3.0 =
 * Admin settings UX: widened the "Field" column in the Logs table, gave the "Fields checked by content rules" block a proper section heading, and fixed the "Settings saved." notice never appearing after save (auto-dismisses after 5 seconds now).
