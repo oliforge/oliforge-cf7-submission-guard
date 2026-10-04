@@ -625,6 +625,7 @@ class OliForge_CF7SG_Settings {
                             ?>
                             <?php $this->text_field( 'retention_days', __( 'Retention, days', 'oliforge-cf7-submission-guard' ), $s, '', 'number', 1 ); ?>
                         </div>
+                        <?php do_action( 'oliforge_cf7sg_logging_panel', $s ); ?>
                         <p class="oliforge-field__hint"><?php esc_html_e( 'Name and message contents are never written to the plugin log. The submitted email address itself is never stored either — only its domain (e.g. "example.com"), to help spot patterns.', 'oliforge-cf7-submission-guard' ); ?></p>
                     </section>
 
@@ -701,11 +702,30 @@ class OliForge_CF7SG_Settings {
     public function render_logs() {
         if ( ! current_user_can( 'manage_options' ) ) { return; }
         $rows = OliForge_CF7SG_Logger::recent( 200 );
+        // Add-ons can register extra views (e.g. the Pro "Passed" journal).
+        $views = (array) apply_filters( 'oliforge_cf7sg_logs_views', array() );
+        $view = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( $_GET['view'] ) ) : 'all'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        if ( ! isset( $views[ $view ] ) ) { $view = 'all'; }
         ?>
         <div class="wrap oliforge-cf7sg-ui">
             <?php
             $this->render_brand_header( __( 'Logs', 'oliforge-cf7-submission-guard' ) );
             $this->render_nav_tabs( 'logs' );
+            if ( $views ) :
+                $views = array( 'all' => __( 'All events', 'oliforge-cf7-submission-guard' ) ) + $views;
+                ?>
+                <nav class="oliforge-subtabs">
+                    <?php foreach ( $views as $slug => $label ) : ?>
+                        <a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oliforge-cf7-submission-guard-logs', 'view' => $slug ), admin_url( 'admin.php' ) ) ); ?>" class="oliforge-subtabs__link<?php echo $slug === $view ? ' is-active' : ''; ?>"><?php echo esc_html( $label ); ?></a>
+                    <?php endforeach; ?>
+                </nav>
+                <?php
+            endif;
+            if ( 'all' !== $view ) {
+                do_action( 'oliforge_cf7sg_logs_view_' . $view );
+                echo '</div>';
+                return;
+            }
             ?>
             <p class="oliforge-lede"><?php esc_html_e( 'Latest 200 events. Name and message contents are never stored; the email address itself is never stored either, only its domain.', 'oliforge-cf7-submission-guard' ); ?></p>
 

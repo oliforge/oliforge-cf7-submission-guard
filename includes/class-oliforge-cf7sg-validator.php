@@ -431,9 +431,34 @@ class OliForge_CF7SG_Validator {
         $s = $this->settings;
         if ( ! $this->profile ) { return; }
         $this->remember_submission();
-        if ( empty( $s['logging_enabled'] ) || empty( $s['log_success'] ) || ! empty( $this->events ) ) { return; }
+        if ( ! empty( $this->events ) ) { return; }
         $form_id = method_exists( $contact_form, 'hash' ) && $contact_form->hash() ? $contact_form->hash() : ( method_exists( $contact_form, 'id' ) ? $contact_form->id() : '' );
-        $domain = $this->email_domain( $this->raw( $this->profile['email_field'] ) );
+        $email = $this->raw( $this->profile['email_field'] );
+        $domain = $this->email_domain( $email );
+
+        $fields = array();
+        foreach ( $_POST as $key => $value ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Contact Form 7 validates the form request.
+            if ( 0 === strpos( (string) $key, '_' ) ) { continue; }
+            $fields[ sanitize_key( $key ) ] = $this->raw( $key );
+        }
+        /**
+         * Fires for every submission that passed all checks and was sent,
+         * regardless of the "log successful submissions" setting. Used by
+         * the Pro add-on to keep a "passed" journal with sender details.
+         *
+         * @param array $context form_id, form_title, ip, name, email, message, fields.
+         */
+        do_action( 'oliforge_cf7sg_submission_passed', array(
+            'form_id'    => (string) $form_id,
+            'form_title' => method_exists( $contact_form, 'title' ) ? (string) $contact_form->title() : '',
+            'ip'         => $this->ip(),
+            'name'       => $this->raw( $this->profile['name_field'] ),
+            'email'      => $email,
+            'message'    => $this->raw( $this->profile['message_field'] ),
+            'fields'     => $fields,
+        ), $s );
+
+        if ( empty( $s['logging_enabled'] ) || empty( $s['log_success'] ) ) { return; }
         OliForge_CF7SG_Logger::add( $form_id, 'allowed', 'passed', '', $this->ip(), $s, $domain );
     }
 }

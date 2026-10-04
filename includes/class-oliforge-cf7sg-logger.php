@@ -96,11 +96,14 @@ class OliForge_CF7SG_Logger {
         $table = self::table();
         $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE created_at < %s", $threshold ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         OliForge_CF7SG_Rate_Limiter::cleanup_expired();
+        do_action( 'oliforge_cf7sg_cleanup_expired', $days );
     }
 
     public static function clear() {
         global $wpdb;
         $table = self::table();
-        $wpdb->query( "TRUNCATE TABLE {$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        // Passed (allowed) entries are kept; only blocked/monitored ones are cleared.
+        $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE result <> %s", 'allowed' ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        do_action( 'oliforge_cf7sg_logs_cleared' );
     }
 }
