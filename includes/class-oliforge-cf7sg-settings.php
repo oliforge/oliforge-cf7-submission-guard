@@ -121,8 +121,11 @@ class OliForge_CF7SG_Settings {
         if ( false === strpos( $hook, 'oliforge-cf7-submission-guard' ) ) {
             return;
         }
-        wp_enqueue_style( 'oliforge-cf7sg-admin', OLIFORGE_CF7SG_URL . 'assets/admin.css', array(), OLIFORGE_CF7SG_VERSION );
-        wp_enqueue_script( 'oliforge-cf7sg-admin', OLIFORGE_CF7SG_URL . 'assets/admin.js', array(), OLIFORGE_CF7SG_VERSION, true );
+        // File mtime as the version so edited assets bypass the browser cache.
+        $css_ver = (string) @filemtime( OLIFORGE_CF7SG_DIR . 'assets/admin.css' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+        $js_ver  = (string) @filemtime( OLIFORGE_CF7SG_DIR . 'assets/admin.js' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+        wp_enqueue_style( 'oliforge-cf7sg-admin', OLIFORGE_CF7SG_URL . 'assets/admin.css', array(), $css_ver ? $css_ver : OLIFORGE_CF7SG_VERSION );
+        wp_enqueue_script( 'oliforge-cf7sg-admin', OLIFORGE_CF7SG_URL . 'assets/admin.js', array(), $js_ver ? $js_ver : OLIFORGE_CF7SG_VERSION, true );
     }
 
     private function clean_multiline( $value ) {
@@ -494,7 +497,16 @@ class OliForge_CF7SG_Settings {
             <?php
             $this->render_brand_header( __( 'Settings', 'oliforge-cf7-submission-guard' ) );
             $this->render_nav_tabs( 'settings' );
+            // Core's "Settings saved." message isn't reliably queued for
+            // pages under a custom top-level menu, so fall back to our own
+            // notice (same markup, so the auto-dismiss in admin.js applies).
+            ob_start();
             settings_errors();
+            $notices = trim( (string) ob_get_clean() );
+            if ( '' === $notices && ! empty( $_GET['settings-updated'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+                $notices = '<div class="notice notice-success settings-error is-dismissible"><p><strong>' . esc_html__( 'Settings saved.', 'oliforge-cf7-submission-guard' ) . '</strong></p></div>';
+            }
+            echo $notices; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core-generated or escaped above.
             ?>
             <p class="oliforge-lede"><?php esc_html_e( 'Server-side submission rules for Contact Form 7. Field names must match the CF7 form-tag names.', 'oliforge-cf7-submission-guard' ); ?></p>
 
