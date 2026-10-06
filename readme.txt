@@ -12,7 +12,19 @@ Configurable server-side submission rules and lightweight logs for Contact Form 
 
 == Description ==
 
-OliForge CF7 Submission Guard validates Contact Form 7 submissions before mail is sent. It can enforce field length rules, block URLs and email-like content, validate country values when OliForge CF7 Country Select is active, block email domains, rate-limit by IP, require a minimum completion time, detect duplicate messages, validate a configured consent field, and keep lightweight security logs without storing submitted message contents.
+OliForge CF7 Submission Guard validates Contact Form 7 submissions before mail is sent. Every Contact Form 7 form gets its own protection profile (disabled until you enable it) with field mapping and length rules. Protection can:
+
+* Enforce field length rules and block URLs, email-like content and HTML in text fields.
+* Validate native select values and, when OliForge CF7 Country Select is active, every country field on the form.
+* Block email domains, rate-limit by IP, require a minimum completion time and detect duplicate messages.
+* Validate a configured consent field.
+* Run in Monitor mode, which records rule matches without rejecting the submission.
+
+Logs are lightweight: they record the form (shown by its Contact Form 7 title), the rule that matched and the result, and are paginated in wp-admin. By default the plugin does not store submitted names, email addresses or message contents.
+
+= Extending the plugin =
+
+The plugin exposes hooks for add-ons such as OliForge CF7 Submission Guard Pro: extra panels in the Domains and Logging tabs, extra settings keys, additional email-domain checks, additional views on the Logs page, and an `oliforge_cf7sg_submission_passed` action fired after a submission passes all checks. An add-on that uses this action may store submission details; the free plugin itself does not.
 
 == Installation ==
 
