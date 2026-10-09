@@ -16,9 +16,14 @@ class OliForge_CF7SG_Validator {
     }
 
     public function inject_timing_token( $html ) {
-        if ( empty( $this->settings['enabled'] ) || empty( $this->settings['min_time_enabled'] ) ) { return $html; }
+        if ( empty( $this->settings['enabled'] ) ) { return $html; }
         $profile = $this->active_profile();
         if ( ! $profile ) { return $html; }
+        if ( ! empty( $this->settings['honeypot_enabled'] ) ) {
+            // A field people never see; bots that fill every input give themselves away.
+            $html .= '<div style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden" aria-hidden="true"><label>' . esc_html__( 'Leave this field empty', 'oliforge-cf7-submission-guard' ) . '<input type="text" name="oliforge_cf7sg_website" value="" tabindex="-1" autocomplete="off"></label></div>';
+        }
+        if ( empty( $this->settings['min_time_enabled'] ) ) { return $html; }
         $form_id = $this->numeric_form_id();
         $ts = time();
         $sig = hash_hmac( 'sha256', $form_id . '|' . $ts, wp_salt( 'nonce' ) );
@@ -406,6 +411,8 @@ class OliForge_CF7SG_Validator {
                 $this->add_event( 'invalid_option', $field, $s['msg_invalid_option'] );
             }
         }
+
+        if ( ! empty( $s['honeypot_enabled'] ) && '' !== $this->raw( 'oliforge_cf7sg_website' ) ) { $this->add_event( 'honeypot', $p['error_field'], $s['msg_honeypot'] ); }
 
         $numeric_form_id = $this->numeric_form_id();
         if ( $this->timing_invalid( $numeric_form_id ) ) { $this->add_event( 'too_fast', $p['error_field'], $s['msg_too_fast'] ); }

@@ -39,6 +39,7 @@ class OliForge_CF7SG_Settings {
             'rate_limit_enabled'      => 1,
             'rate_limit_count'        => 3,
             'rate_limit_minutes'      => 60,
+            'honeypot_enabled'        => 1,
             'min_time_enabled'        => 1,
             'min_time_seconds'        => 15,
             'duplicate_enabled'       => 0,
@@ -62,6 +63,7 @@ class OliForge_CF7SG_Settings {
             'msg_domain'              => 'This email domain is not allowed.',
             'msg_rate_limit'          => 'Too many submissions. Please try again later.',
             'msg_too_fast'            => 'The form was submitted too quickly. Please try again.',
+            'msg_honeypot'            => 'The form could not be submitted. Please try again.',
             'msg_duplicate'           => 'This message was already submitted recently.',
             'msg_consent'             => 'Please accept the required consent.',
         );
@@ -141,7 +143,7 @@ class OliForge_CF7SG_Settings {
         // integration is active; preserve their stored value instead of wiping
         // it out when the panel (and so the POST field) is absent.
         $current = self::get();
-        $checkboxes = array( 'enabled','required_consent','block_urls','block_at','block_email_patterns','block_html','block_bbcode','validate_select_options','rate_limit_enabled','min_time_enabled','duplicate_enabled','logging_enabled','log_success' );
+        $checkboxes = array( 'enabled','required_consent','block_urls','block_at','block_email_patterns','block_html','block_bbcode','validate_select_options','rate_limit_enabled','honeypot_enabled','min_time_enabled','duplicate_enabled','logging_enabled','log_success' );
         foreach ( $checkboxes as $key ) {
             $out[ $key ] = empty( $input[ $key ] ) ? 0 : 1;
         }
@@ -606,6 +608,8 @@ class OliForge_CF7SG_Settings {
                             <?php $this->text_field( 'rate_limit_minutes', __( 'Period, minutes', 'oliforge-cf7-submission-guard' ), $s, '', 'number', 1 ); ?>
                         </div>
                         <hr class="oliforge-divider">
+                        <?php $this->toggle( 'honeypot_enabled', __( 'Enable honeypot field', 'oliforge-cf7-submission-guard' ), $s ); ?>
+                        <hr class="oliforge-divider">
                         <?php $this->toggle( 'min_time_enabled', __( 'Enable minimum completion time', 'oliforge-cf7-submission-guard' ), $s ); ?>
                         <?php $this->text_field( 'min_time_seconds', __( 'Minimum seconds', 'oliforge-cf7-submission-guard' ), $s, '', 'number', 0 ); ?>
                         <hr class="oliforge-divider">
@@ -659,6 +663,7 @@ class OliForge_CF7SG_Settings {
                             'msg_domain'        => __( 'Blocked email domain', 'oliforge-cf7-submission-guard' ),
                             'msg_rate_limit'    => __( 'Rate limit', 'oliforge-cf7-submission-guard' ),
                             'msg_too_fast'      => __( 'Too fast', 'oliforge-cf7-submission-guard' ),
+                            'msg_honeypot'      => __( 'Honeypot filled', 'oliforge-cf7-submission-guard' ),
                             'msg_duplicate'     => __( 'Duplicate', 'oliforge-cf7-submission-guard' ),
                             'msg_consent'       => __( 'Consent missing', 'oliforge-cf7-submission-guard' ),
                         );
