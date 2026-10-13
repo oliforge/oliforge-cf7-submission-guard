@@ -1,4 +1,4 @@
-# OliForge CF7 Submission Guard v0.4.0 — smoke test
+# OliForge CF7 Submission Guard v0.4.1 — smoke test
 
 Use a Contact Form 7 form. Enable it under Submission Guard and map its fields first; newly discovered forms stay disabled until enabled.
 
@@ -48,3 +48,7 @@ Use a Contact Form 7 form. Enable it under Submission Guard and map its fields f
 30. The Passed tab paginates at 30 per page, sorts by date and by sender, and its search matches any field.
 31. The Passed tab's "Clear all" empties only that journal; entries are not removed by the retention cleanup (run it manually or wait for the daily cron) and are deleted only by that button.
 32. Uninstalling Pro removes the Passed journal data.
+
+## Plugins list
+
+- With Pro inactive, an orange "Upgrade to Pro" link follows Deactivate and opens the Pro page in a new tab; it disappears once Pro is active.
