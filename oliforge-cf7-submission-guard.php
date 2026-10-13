@@ -1,6 +1,7 @@
 <?php
 /**
  * Plugin Name: OliForge CF7 Submission Guard
+ * Plugin URI: https://oliforge.io/plugins/oliforge-cf7-submission-guard/
  * Description: Configurable server-side submission validation and lightweight logging for Contact Form 7.
  * Version: 0.4.0
  * Requires at least: 6.2
@@ -26,6 +27,13 @@ require_once OLIFORGE_CF7SG_DIR . 'includes/class-oliforge-cf7sg-forms.php';
 require_once OLIFORGE_CF7SG_DIR . 'includes/class-oliforge-cf7sg-validator.php';
 require_once OLIFORGE_CF7SG_DIR . 'includes/class-oliforge-cf7sg-settings.php';
 require_once OLIFORGE_CF7SG_DIR . 'includes/class-oliforge-cf7sg-plugin.php';
+
+add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), static function ( $links ) {
+    if ( ! defined( 'OLIFORGE_CF7SG_PRO_VERSION' ) ) {
+        $links[] = '<a href="' . esc_url( 'https://oliforge.io/plugins/oliforge-cf7-submission-guard-pro/' ) . '" target="_blank" rel="noopener" style="color:#C25F0A;font-weight:600;">' . esc_html__( 'Upgrade to Pro', 'oliforge-cf7-submission-guard' ) . '</a>';
+    }
+    return $links;
+} );
 
 register_activation_hook( __FILE__, array( 'OliForge_CF7SG_Plugin', 'activate' ) );
 register_deactivation_hook( __FILE__, array( 'OliForge_CF7SG_Plugin', 'deactivate' ) );

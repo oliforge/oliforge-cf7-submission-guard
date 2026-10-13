@@ -32,6 +32,7 @@ final class OliForge_CF7SG_Forms {
             $result[ $id ] = array(
                 'id'     => $id,
                 'hash'   => method_exists( $form, 'hash' ) ? (string) $form->hash() : '',
+                /* translators: %s: Contact Form 7 form ID. */
                 'title'  => method_exists( $form, 'title' ) ? (string) $form->title() : sprintf( __( 'Form %s', 'oliforge-cf7-submission-guard' ), $id ),
                 'locale' => method_exists( $form, 'locale' ) ? (string) $form->locale() : '',
                 'fields' => $fields,

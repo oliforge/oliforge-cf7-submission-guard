@@ -250,7 +250,7 @@ class OliForge_CF7SG_Settings {
             '<input id="%1$s" class="regular-text" type="%2$s"%3$s name="%4$s[%5$s]" value="%6$s">',
             esc_attr( $id ),
             esc_attr( $type ),
-            $min_attr,
+            $min_attr, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped with esc_attr() when built above.
             esc_attr( self::OPTION ),
             esc_attr( $name ),
             esc_attr( $s[ $name ] )
