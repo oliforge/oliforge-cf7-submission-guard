@@ -4,7 +4,7 @@ Tags: contact form 7, validation, spam, security, rate limit
 Requires at least: 6.2
 Requires PHP: 7.4
 Tested up to: 7.1
-Stable tag: 0.4.2
+Stable tag: 0.4.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,10 @@ The plugin exposes hooks for add-ons such as OliForge CF7 Submission Guard Pro: 
 3. Open the "Submission Guard" menu in wp-admin, enable protection for the required CF7 forms, map their fields, and configure the shared rules.
 
 == Changelog ==
+
+= 0.4.3 =
+* Added a "Get more with Submission Guard Pro" block at the bottom of the Dashboard, listing the Pro features with a button to the Pro page (hidden once Pro is active).
+* Updated the translation template and the German, Spanish, French, Russian and Ukrainian translations: the new Pro strings plus previously untranslated strings (honeypot option, Logs tab, settings notices). Fixed the plural rules for Russian, Ukrainian and French.
 
 = 0.4.2 =
 * Database queries now pass table names through the `%i` identifier placeholder of `$wpdb->prepare()` instead of interpolating them into the SQL string (requires WordPress 6.2+, already the minimum).

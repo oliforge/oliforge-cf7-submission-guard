@@ -1,4 +1,4 @@
-# OliForge CF7 Submission Guard v0.4.2 — smoke test
+# OliForge CF7 Submission Guard v0.4.3 — smoke test
 
 Use a Contact Form 7 form. Enable it under Submission Guard and map its fields first; newly discovered forms stay disabled until enabled.
 
@@ -51,6 +51,7 @@ Use a Contact Form 7 form. Enable it under Submission Guard and map its fields f
 
 ## Plugins list
 
+- With Pro inactive, the Dashboard ends with a "Get more with Submission Guard Pro" block listing four features and a button that opens the Pro page in a new tab; with Pro active the block is absent.
 - With Pro inactive, an orange "Upgrade to Pro" link follows Deactivate and opens the Pro page in a new tab; it disappears once Pro is active.
 
 ## Database and uninstall

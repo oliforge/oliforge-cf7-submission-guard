@@ -463,7 +463,33 @@ class OliForge_CF7SG_Settings {
                     <?php endif; ?>
                 </section>
             </div>
+
+            <?php $this->render_pro_promo(); ?>
         </div>
+        <?php
+    }
+
+    /**
+     * "Go Pro" block on the Dashboard; hidden once the Pro add-on is active.
+     */
+    private function render_pro_promo() {
+        if ( defined( 'OLIFORGE_CF7SG_PRO_VERSION' ) ) { return; }
+        $features = array(
+            __( 'Email-domain allowlist: accept submissions only from a chosen set of domains.', 'oliforge-cf7-submission-guard' ),
+            __( 'Auto-updated disposable-email domain list, refreshed daily, with a manual "Refresh now".', 'oliforge-cf7-submission-guard' ),
+            __( 'MX/DNS validation: reject addresses whose domain has no mail server (typos, non-existent domains).', 'oliforge-cf7-submission-guard' ),
+            __( 'Passed journal: a searchable, sortable log of submissions that passed every check.', 'oliforge-cf7-submission-guard' ),
+        );
+        ?>
+        <section class="oliforge-card oliforge-pro-promo">
+            <h2><?php esc_html_e( 'Get more with Submission Guard Pro', 'oliforge-cf7-submission-guard' ); ?></h2>
+            <ul class="oliforge-pro-promo__list">
+                <?php foreach ( $features as $feature ) : ?>
+                    <li><?php echo esc_html( $feature ); ?></li>
+                <?php endforeach; ?>
+            </ul>
+            <p><a class="button button-primary" href="<?php echo esc_url( 'https://oliforge.io/plugins/oliforge-cf7-submission-guard-pro/' ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Get a Pro version', 'oliforge-cf7-submission-guard' ); ?></a></p>
+        </section>
         <?php
     }
 
