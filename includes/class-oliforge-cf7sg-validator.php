@@ -35,8 +35,10 @@ class OliForge_CF7SG_Validator {
     }
 
     private function raw( $name ) {
+        // phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Runs inside Contact Form 7's own submission request. Values are only inspected by the validation rules (kept unmodified so rules such as link and keyword detection see the original text) and are never output or stored as-is.
         if ( ! $name || ! isset( $_POST[ $name ] ) ) { return ''; }
         $value = wp_unslash( $_POST[ $name ] );
+        // phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         if ( is_array( $value ) ) {
             $value = implode( ', ', array_map( 'sanitize_text_field', $value ) );
         }
@@ -266,8 +268,10 @@ class OliForge_CF7SG_Validator {
         foreach ( (array) $form->scan_form_tags() as $tag ) {
             if ( empty( $tag->name ) || ! isset( $tag->basetype ) || 'select' !== $tag->basetype ) { continue; }
             $name = sanitize_key( $tag->name );
+            // phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Contact Form 7 handles the submission request; each value is sanitized with sanitize_text_field() just below before comparison.
             if ( ! isset( $_POST[ $name ] ) ) { continue; }
-            $posted = wp_unslash( $_POST[ $name ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Contact Form 7 validates the form request.
+            $posted = wp_unslash( $_POST[ $name ] );
+            // phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             $posted = is_array( $posted ) ? $posted : array( $posted );
             $posted = array_values( array_filter( array_map( static function ( $v ) {
                 return trim( sanitize_text_field( (string) $v ) );
@@ -302,8 +306,10 @@ class OliForge_CF7SG_Validator {
 
     private function timing_invalid( $form_id ) {
         if ( empty( $this->settings['min_time_enabled'] ) ) { return false; }
+        // phpcs:disable WordPress.Security.NonceVerification.Missing -- The timing token carries its own HMAC signature, verified below; Contact Form 7 handles the request itself.
         $ts = isset( $_POST['_oliforge_cf7sg_ts'] ) ? absint( $_POST['_oliforge_cf7sg_ts'] ) : 0;
         $sig = isset( $_POST['_oliforge_cf7sg_sig'] ) ? sanitize_text_field( wp_unslash( $_POST['_oliforge_cf7sg_sig'] ) ) : '';
+        // phpcs:enable WordPress.Security.NonceVerification.Missing
         if ( ! $ts || ! $sig ) { return true; }
         $expected = hash_hmac( 'sha256', $form_id . '|' . $ts, wp_salt( 'nonce' ) );
         if ( ! hash_equals( $expected, $sig ) ) { return true; }

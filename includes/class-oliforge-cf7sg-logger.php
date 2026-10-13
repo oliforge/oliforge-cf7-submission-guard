@@ -39,6 +39,7 @@ class OliForge_CF7SG_Logger {
         if ( empty( $settings['logging_enabled'] ) ) { return; }
         global $wpdb;
         $ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Plugin-owned custom table.
         $wpdb->insert(
             self::table(),
             array(
@@ -59,7 +60,8 @@ class OliForge_CF7SG_Logger {
         global $wpdb;
         $limit = max( 1, min( 500, absint( $limit ) ) );
         $table = self::table();
-        return $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table} ORDER BY id DESC LIMIT %d", $limit ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Plugin-owned custom table; the data is live and not cacheable.
+        return $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i ORDER BY id DESC LIMIT %d', $table, $limit ) );
     }
 
     /**
@@ -96,7 +98,8 @@ class OliForge_CF7SG_Logger {
     public static function count() {
         global $wpdb;
         $table = self::table();
-        return (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Plugin-owned custom table; the data is live and not cacheable.
+        return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i', $table ) );
     }
 
     public static function page( $paged = 1, $per_page = 30 ) {
@@ -104,7 +107,8 @@ class OliForge_CF7SG_Logger {
         $per_page = max( 1, min( 200, absint( $per_page ) ) );
         $offset = ( max( 1, absint( $paged ) ) - 1 ) * $per_page;
         $table = self::table();
-        return $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table} ORDER BY id DESC LIMIT %d OFFSET %d", $per_page, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Plugin-owned custom table; the data is live and not cacheable.
+        return $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i ORDER BY id DESC LIMIT %d OFFSET %d', $table, $per_page, $offset ) );
     }
 
     /**
@@ -117,12 +121,14 @@ class OliForge_CF7SG_Logger {
         $since = gmdate( 'Y-m-d H:i:s', time() - ( max( 1, absint( $days ) ) * DAY_IN_SECONDS ) );
 
         $totals = array( 'blocked' => 0, 'monitored' => 0, 'allowed' => 0 );
-        $rows = $wpdb->get_results( $wpdb->prepare( "SELECT result, COUNT(*) AS total FROM {$table} WHERE created_at >= %s GROUP BY result", $since ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Plugin-owned custom table; the data is live and not cacheable.
+        $rows = $wpdb->get_results( $wpdb->prepare( 'SELECT result, COUNT(*) AS total FROM %i WHERE created_at >= %s GROUP BY result', $table, $since ) );
         foreach ( (array) $rows as $row ) {
             if ( isset( $totals[ $row->result ] ) ) { $totals[ $row->result ] = (int) $row->total; }
         }
 
-        $by_rule = $wpdb->get_results( $wpdb->prepare( "SELECT rule, COUNT(*) AS total FROM {$table} WHERE created_at >= %s AND result IN (%s, %s) GROUP BY rule ORDER BY total DESC LIMIT 8", $since, 'blocked', 'monitored' ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Plugin-owned custom table; the data is live and not cacheable.
+        $by_rule = $wpdb->get_results( $wpdb->prepare( 'SELECT rule, COUNT(*) AS total FROM %i WHERE created_at >= %s AND result IN (%s, %s) GROUP BY rule ORDER BY total DESC LIMIT 8', $table, $since, 'blocked', 'monitored' ) );
 
         return array(
             'days'      => absint( $days ),
@@ -139,7 +145,8 @@ class OliForge_CF7SG_Logger {
         $days = max( 1, absint( $settings['retention_days'] ) );
         $threshold = gmdate( 'Y-m-d H:i:s', time() - ( $days * DAY_IN_SECONDS ) );
         $table = self::table();
-        $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE created_at < %s", $threshold ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Plugin-owned custom table; the data is live and not cacheable.
+        $wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE created_at < %s', $table, $threshold ) );
         OliForge_CF7SG_Rate_Limiter::cleanup_expired();
         do_action( 'oliforge_cf7sg_cleanup_expired', $days );
     }
@@ -148,7 +155,8 @@ class OliForge_CF7SG_Logger {
         global $wpdb;
         $table = self::table();
         // Passed (allowed) entries are kept; only blocked/monitored ones are cleared.
-        $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE result <> %s", 'allowed' ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Plugin-owned custom table; the data is live and not cacheable.
+        $wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE result <> %s', $table, 'allowed' ) );
         do_action( 'oliforge_cf7sg_logs_cleared' );
     }
 }

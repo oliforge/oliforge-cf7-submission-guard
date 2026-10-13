@@ -1,4 +1,4 @@
-# OliForge CF7 Submission Guard v0.4.1 — smoke test
+# OliForge CF7 Submission Guard v0.4.2 — smoke test
 
 Use a Contact Form 7 form. Enable it under Submission Guard and map its fields first; newly discovered forms stay disabled until enabled.
 
@@ -52,3 +52,9 @@ Use a Contact Form 7 form. Enable it under Submission Guard and map its fields f
 ## Plugins list
 
 - With Pro inactive, an orange "Upgrade to Pro" link follows Deactivate and opens the Pro page in a new tab; it disappears once Pro is active.
+
+## Database and uninstall
+
+- Submit a form with logging enabled: the Logs tab lists the entry, counts and statistics update, and Clear removes blocked/monitored entries (Passed entries stay).
+- Submit past the rate limit: further attempts are blocked.
+- Deactivate and delete the plugin: the log and rate-limit tables, options and cron event are removed.

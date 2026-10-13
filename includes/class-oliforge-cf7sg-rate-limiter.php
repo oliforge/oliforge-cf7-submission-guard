@@ -39,20 +39,24 @@ class OliForge_CF7SG_Rate_Limiter {
 
         // One atomic statement prevents parallel submissions from losing an
         // increment. The window is fixed by window_start and is never extended.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Plugin-owned custom table; the data is live and not cacheable.
         $wpdb->query( $wpdb->prepare(
-            "INSERT INTO {$table} (rate_key, window_start, attempt_count, expires_at)
+            'INSERT INTO %i (rate_key, window_start, attempt_count, expires_at)
              VALUES (%s, %d, 1, %s)
-             ON DUPLICATE KEY UPDATE attempt_count = attempt_count + 1",
+             ON DUPLICATE KEY UPDATE attempt_count = attempt_count + 1',
+            $table,
             $key,
             $window_start,
             $expires_at
-        ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        ) );
 
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Plugin-owned custom table; the data is live and not cacheable.
         $count = (int) $wpdb->get_var( $wpdb->prepare(
-            "SELECT attempt_count FROM {$table} WHERE rate_key = %s AND window_start = %d",
+            'SELECT attempt_count FROM %i WHERE rate_key = %s AND window_start = %d',
+            $table,
             $key,
             $window_start
-        ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        ) );
 
         return $count > $max;
     }
@@ -60,9 +64,11 @@ class OliForge_CF7SG_Rate_Limiter {
     public static function cleanup_expired() {
         global $wpdb;
         $table = self::table();
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Plugin-owned custom table; the data is live and not cacheable.
         $wpdb->query( $wpdb->prepare(
-            "DELETE FROM {$table} WHERE expires_at < %s",
+            'DELETE FROM %i WHERE expires_at < %s',
+            $table,
             current_time( 'mysql', true )
-        ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        ) );
     }
 }
