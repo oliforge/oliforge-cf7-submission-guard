@@ -1,7 +1,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: OliForge CF7 Submission Guard 0.4.3\n"
+"Project-Id-Version: OliForge CF7 Submission Guard 0.4.4\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/oliforge-cf7-submission-guard\n"
 "POT-Creation-Date: 2026-10-13T08:58:51+00:00\n"
 "PO-Revision-Date: 2026-09-18 10:39+0000\n"
@@ -537,6 +537,10 @@ msgstr "Заблокированный домен email"
 #: includes/class-oliforge-cf7sg-settings.php:691
 msgid "Too fast"
 msgstr "Слишком быстро"
+
+#: includes/class-oliforge-cf7sg-settings.php:692
+msgid "Form expired or token missing"
+msgstr "Форма устарела или нет токена"
 
 #: includes/class-oliforge-cf7sg-settings.php:692
 msgid "Honeypot filled"

@@ -1,4 +1,4 @@
-# OliForge CF7 Submission Guard v0.4.3 — smoke test
+# OliForge CF7 Submission Guard v0.4.4 — smoke test
 
 Use a Contact Form 7 form. Enable it under Submission Guard and map its fields first; newly discovered forms stay disabled until enabled.
 
@@ -12,7 +12,7 @@ Use a Contact Form 7 form. Enable it under Submission Guard and map its fields f
 6. HTML tags should be rejected when enabled.
 7. An email from a blocked domain or its subdomain should be rejected.
 8. A native `select` value not offered by the field (including pipe-mapped and multiple values) should be rejected.
-9. A form submitted before the minimum completion time should be rejected, including if the timing signature is missing or altered.
+9. A form submitted before the minimum completion time should be rejected and logged as `too_fast`. A missing, altered or day-old timing signature should be rejected with the "form expired" message and logged as `timing_missing`, `timing_invalid` or `timing_expired`.
 10. After the configured number of attempts from one IP within the window, further attempts should be rejected.
 11. Duplicate message blocking should reject the same message from the same IP within its window when enabled, and only after a previous message was actually sent.
 12. Required consent should reject an empty configured consent field when enabled.

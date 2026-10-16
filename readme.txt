@@ -4,7 +4,7 @@ Tags: contact form 7, validation, spam, security, rate limit
 Requires at least: 6.2
 Requires PHP: 7.4
 Tested up to: 7.1
-Stable tag: 0.4.3
+Stable tag: 0.4.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,11 @@ The plugin exposes hooks for add-ons such as OliForge CF7 Submission Guard Pro: 
 3. Open the "Submission Guard" menu in wp-admin, enable protection for the required CF7 forms, map their fields, and configure the shared rules.
 
 == Changelog ==
+
+= 0.4.4 =
+* Timing failures now log distinct rule codes: `too_fast` (submitted before the minimum time), `timing_missing`, `timing_invalid` and `timing_expired`. Previously every timing failure was logged as `too_fast`, including a missing, altered or day-old timing token.
+* A missing, altered or expired timing token now shows a new editable "form expired" message asking the visitor to reload the page, instead of the "too quickly" message.
+* Updated the translation template and the German, Spanish, French, Russian and Ukrainian translations.
 
 = 0.4.3 =
 * Added a "Get more with Submission Guard Pro" block at the bottom of the Dashboard, listing the Pro features with a button to the Pro page (hidden once Pro is active).

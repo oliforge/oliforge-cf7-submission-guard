@@ -304,17 +304,27 @@ class OliForge_CF7SG_Validator {
         return false;
     }
 
-    private function timing_invalid( $form_id ) {
-        if ( empty( $this->settings['min_time_enabled'] ) ) { return false; }
+    /**
+     * Check the signed timing token.
+     *
+     * @param int $form_id Numeric Contact Form 7 form ID.
+     * @return string Rule code for the failure, or an empty string when the token is fine:
+     *                'timing_missing' (no token or signature posted), 'timing_invalid' (signature mismatch),
+     *                'timing_expired' (token older than a day), 'too_fast' (submitted before the minimum time).
+     */
+    private function timing_failure( $form_id ) {
+        if ( empty( $this->settings['min_time_enabled'] ) ) { return ''; }
         // phpcs:disable WordPress.Security.NonceVerification.Missing -- The timing token carries its own HMAC signature, verified below; Contact Form 7 handles the request itself.
         $ts = isset( $_POST['_oliforge_cf7sg_ts'] ) ? absint( $_POST['_oliforge_cf7sg_ts'] ) : 0;
         $sig = isset( $_POST['_oliforge_cf7sg_sig'] ) ? sanitize_text_field( wp_unslash( $_POST['_oliforge_cf7sg_sig'] ) ) : '';
         // phpcs:enable WordPress.Security.NonceVerification.Missing
-        if ( ! $ts || ! $sig ) { return true; }
+        if ( ! $ts || ! $sig ) { return 'timing_missing'; }
         $expected = hash_hmac( 'sha256', $form_id . '|' . $ts, wp_salt( 'nonce' ) );
-        if ( ! hash_equals( $expected, $sig ) ) { return true; }
+        if ( ! hash_equals( $expected, $sig ) ) { return 'timing_invalid'; }
         $elapsed = time() - $ts;
-        return $elapsed < absint( $this->settings['min_time_seconds'] ) || $elapsed > DAY_IN_SECONDS;
+        if ( $elapsed > DAY_IN_SECONDS ) { return 'timing_expired'; }
+        if ( $elapsed < absint( $this->settings['min_time_seconds'] ) ) { return 'too_fast'; }
+        return '';
     }
 
     private function is_duplicate( $ip, $form_id, $message ) {
@@ -421,7 +431,13 @@ class OliForge_CF7SG_Validator {
         if ( ! empty( $s['honeypot_enabled'] ) && '' !== $this->raw( 'oliforge_cf7sg_website' ) ) { $this->add_event( 'honeypot', $p['error_field'], $s['msg_honeypot'] ); }
 
         $numeric_form_id = $this->numeric_form_id();
-        if ( $this->timing_invalid( $numeric_form_id ) ) { $this->add_event( 'too_fast', $p['error_field'], $s['msg_too_fast'] ); }
+        $timing = $this->timing_failure( $numeric_form_id );
+        if ( 'too_fast' === $timing ) {
+            $this->add_event( 'too_fast', $p['error_field'], $s['msg_too_fast'] );
+        } elseif ( '' !== $timing ) {
+            // A missing, forged or day-old token is not the visitor being quick: reloading the form fixes it.
+            $this->add_event( $timing, $p['error_field'], $s['msg_form_expired'] );
+        }
 
         $ip = $this->ip();
         $form_id = $this->form_id();

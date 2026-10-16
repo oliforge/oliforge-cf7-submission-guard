@@ -2,7 +2,7 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: OliForge CF7 Submission Guard 0.4.2\n"
+"Project-Id-Version: OliForge CF7 Submission Guard 0.4.4\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/oliforge-cf7-submission-guard\n"
 "POT-Creation-Date: 2026-10-13T08:58:51+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
@@ -509,6 +509,10 @@ msgstr ""
 
 #: includes/class-oliforge-cf7sg-settings.php:691
 msgid "Too fast"
+msgstr ""
+
+#: includes/class-oliforge-cf7sg-settings.php:692
+msgid "Form expired or token missing"
 msgstr ""
 
 #: includes/class-oliforge-cf7sg-settings.php:692
