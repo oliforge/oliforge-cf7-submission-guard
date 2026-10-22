@@ -1,4 +1,4 @@
-# OliForge CF7 Submission Guard v0.4.4 — smoke test
+# OliForge CF7 Submission Guard v0.4.5 — smoke test
 
 Use a Contact Form 7 form. Enable it under Submission Guard and map its fields first; newly discovered forms stay disabled until enabled.
 

@@ -4,7 +4,7 @@ Tags: contact form 7, validation, spam, security, rate limit
 Requires at least: 6.2
 Requires PHP: 7.4
 Tested up to: 7.1
-Stable tag: 0.4.4
+Stable tag: 0.4.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,10 @@ The plugin exposes hooks for add-ons such as OliForge CF7 Submission Guard Pro: 
 3. Open the "Submission Guard" menu in wp-admin, enable protection for the required CF7 forms, map their fields, and configure the shared rules.
 
 == Changelog ==
+
+= 0.4.5 =
+* Rewrote the plugin description: a local, transparent policy firewall that checks every submission against the rules of its form, with no external services, working alongside Akismet, Turnstile and reCAPTCHA.
+* Listed the honeypot field in the feature list.
 
 = 0.4.4 =
 * Timing failures now log distinct rule codes: `too_fast` (submitted before the minimum time), `timing_missing`, `timing_invalid` and `timing_expired`. Previously every timing failure was logged as `too_fast`, including a missing, altered or day-old timing token.
