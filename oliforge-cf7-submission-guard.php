@@ -2,7 +2,7 @@
 /**
  * Plugin Name: OliForge CF7 Submission Guard
  * Plugin URI: https://oliforge.io/plugins/oliforge-cf7-submission-guard/
- * Description: Configurable server-side submission validation and lightweight logging for Contact Form 7.
+ * Description: A local, transparent policy firewall for Contact Form 7. Checks every submission against the rules of its form, with no external services and no subscription.
  * Version: 0.4.4
  * Requires at least: 6.2
  * Requires PHP: 7.4

@@ -8,17 +8,32 @@ Stable tag: 0.4.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Configurable server-side submission rules and lightweight logs for Contact Form 7.
+A local, transparent policy firewall for Contact Form 7: checks every submission against the rules of its form. No external services.
 
 == Description ==
 
-OliForge CF7 Submission Guard validates Contact Form 7 submissions before mail is sent. Every Contact Form 7 form gets its own protection profile (disabled until you enable it) with field mapping and length rules. Protection can:
+OliForge CF7 Submission Guard is a local, transparent policy firewall for Contact Form 7. It does not only look for spam: it checks that every submission follows the rules of the specific form it was sent through, entirely on your own server, before any mail is sent.
 
-* Enforce field length rules and block URLs, email-like content and HTML in text fields.
-* Validate native select values and, when OliForge CF7 Country Select is active, every country field on the form.
-* Block email domains, rate-limit by IP, require a minimum completion time and detect duplicate messages.
-* Validate a configured consent field.
-* Run in Monitor mode, which records rule matches without rejecting the submission.
+= What makes it different =
+
+* **Rules, not guesses.** You decide what a valid submission looks like for each form: field lengths, no links or HTML where they do not belong, accepted countries, blocked email domains, a minimum time to fill in the form. A submission follows the rules or it does not, and the log shows which rule decided.
+* **Private by design.** Everything runs locally in your WordPress. No message, name or email address is sent to any external service. By default the plugin does not store submitted names, email addresses or message contents.
+* **You stay in control.** Every rule is configured per form. Newly discovered forms stay disabled until you enable them and map their fields. Monitor mode records what a rule would have blocked without rejecting anything, so you can test a rule on live traffic first.
+* **No subscription.** No account, no API key and no monthly fee are needed to keep the protection working, and it does not depend on a vendor's reputation database or an AI service.
+* **Precise and predictable.** The plugin enforces the exact rules of your form instead of competing on the size of a shared blacklist.
+
+= One layer in a layered defense =
+
+Contact Form 7 itself recommends combining several protections instead of relying on a single mechanism. Submission Guard is designed for that: it works alongside the anti-spam integrations built into Contact Form 7, such as Akismet, Cloudflare Turnstile and reCAPTCHA, and does not replace or disable them. Akismet and a CAPTCHA service judge who is sending, using external intelligence. Submission Guard judges what is being sent, by checking the submission against the rules of that form, locally and without sharing the content. Each check runs independently and a submission has to pass all of them.
+
+= What it can enforce =
+
+* Field length rules, and blocking of URLs, email-like content and HTML in text fields.
+* Validation of native select values and, when OliForge CF7 Country Select is active, of every country field on the form.
+* Blocking of specific email domains, rate limiting by IP, a minimum completion time and detection of duplicate messages.
+* Validation of a configured consent field.
+* A hidden honeypot field that catches simple bots.
+* Monitor mode, which records rule matches without rejecting the submission.
 
 Logs are lightweight: they record the form (shown by its Contact Form 7 title), the rule that matched and the result, and are paginated in wp-admin. By default the plugin does not store submitted names, email addresses or message contents.
 
